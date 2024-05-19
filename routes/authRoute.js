@@ -1,7 +1,7 @@
 import { Router } from 'express'
 const router = Router()
 
-router.get('/signuo', (req, res) => {
+router.get('/signup', (req, res) => {
   res.send('Signup user')
 })
 
