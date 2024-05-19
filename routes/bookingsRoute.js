@@ -11,9 +11,18 @@ router.get('/bookings', (req, res) => {
   res.json(booking)
 })
 
-// Define a GET route for fetching a single dish
-router.get('/bookings/1', (req, res) => {
-  res.send('Booking number 1')
+// Define a GET route for fetching a single booking
+router.get('/bookings/1', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT * FROM booking WHERE booking_id = 1'
+    )
+    console.log('rows bookingid1', rows)
+    res.json(rows)
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
 })
 
 // Export the router
