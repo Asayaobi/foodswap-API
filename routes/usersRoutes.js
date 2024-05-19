@@ -6,7 +6,7 @@ const router = Router()
 router.get('/users', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM users')
-    console.log('rows', rows)
+    console.log('rows users', rows)
     res.json(rows)
   } catch (err) {
     console.error(err.message)
@@ -15,8 +15,15 @@ router.get('/users', async (req, res) => {
 })
 
 // Define a GET route for fetching a single user
-router.get('/users/1', (req, res) => {
-  res.send('User number 1')
+router.get('/users/1', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM users WHERE user_id = 1')
+    console.log('rows userid1', rows)
+    res.json(rows)
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
 })
 
 // Export the router
