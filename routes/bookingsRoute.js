@@ -12,7 +12,7 @@ router.get('/bookings', (req, res) => {
 })
 
 // Define a GET route for fetching a single dish
-router.get('/booking/1', (req, res) => {
+router.get('/bookings/1', (req, res) => {
   res.send('Booking number 1')
 })
 
