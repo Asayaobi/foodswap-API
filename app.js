@@ -4,7 +4,7 @@ import express from 'express'
 const app = express()
 
 // Import the users router module
-import usersRouter from './routes/users.js'
+import usersRouter from './routes/usersRoutes.js'
 import foodRouter from './routes/food.js'
 
 // Tell the app to use the user router
