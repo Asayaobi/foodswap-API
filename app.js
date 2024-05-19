@@ -3,9 +3,15 @@ import express from 'express'
 // run the express function
 const app = express()
 
+// Import the users router module
+import usersRouter from './routes/users'
+
+// Tell the app to use the user router
+app.use(usersRouter)
+
 // create routes
 app.get('/', (req, res) => {
-  res.send('Hello Javascript!')
+  res.send('Hello!')
 })
 
 //for testing purpose
