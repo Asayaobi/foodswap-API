@@ -3,13 +3,15 @@ import db from '../db.js'
 const router = Router()
 
 // Define a GET route for fetching the list of booking
-router.get('/bookings', (req, res) => {
-  const booking = [
-    { id: 1, name: 'Food A', price: 100 },
-    { id: 2, name: 'Food B', price: 150 }
-    // Add more products as needed
-  ]
-  res.json(booking)
+router.get('/bookings', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM bookings')
+    console.log('rows bookings', rows)
+    res.json(rows)
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
 })
 
 // Define a GET route for fetching a single booking
