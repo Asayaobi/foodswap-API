@@ -5,23 +5,15 @@ const app = express()
 
 // Import the users router module
 import usersRouter from './routes/users.js'
+import foodRouter from './routes/food.js'
 
 // Tell the app to use the user router
 app.use(usersRouter)
+app.use(foodRouter)
 
 // create routes
 app.get('/', (req, res) => {
-  res.send('Hello!')
-})
-
-//for testing purpose
-app.get('/products', (req, res) => {
-  const products = [
-    { id: 1, name: 'Product A', price: 100 },
-    { id: 2, name: 'Product B', price: 150 }
-    // Add more products as needed
-  ]
-  res.send(products)
+  res.send('Hello from foodswap!')
 })
 
 // keep the server open

@@ -3,7 +3,12 @@ const router = Router()
 
 // Define a GET route for fetching the list of food
 router.get('/food', (req, res) => {
-  res.send('List of food')
+  const food = [
+    { id: 1, name: 'Food A', price: 100 },
+    { id: 2, name: 'Food B', price: 150 }
+    // Add more products as needed
+  ]
+  res.json(food)
 })
 
 // Define a GET route for fetching a single dish
