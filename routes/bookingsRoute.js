@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import db from '../db.js'
 const router = Router()
 
 // Define a GET route for fetching the list of booking
@@ -15,7 +16,7 @@ router.get('/bookings', (req, res) => {
 router.get('/bookings/1', async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM booking WHERE booking_id = 1'
+      'SELECT * FROM bookings WHERE booking_id = 1'
     )
     console.log('rows bookingid1', rows)
     res.json(rows)
