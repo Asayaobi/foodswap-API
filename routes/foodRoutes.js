@@ -2,6 +2,61 @@ import { Router } from 'express'
 import db from '../db.js'
 const router = Router()
 
+// Post a new dish
+router.post('/food', async (req, res) => {
+  try {
+    const {
+      food_title,
+      country,
+      category,
+      ingredients,
+      description,
+      chef_id,
+      rating,
+      available
+    } = req.body
+    console.log('reqbody', req.body)
+    if (
+      !food_title ||
+      !country ||
+      !category ||
+      !ingredients ||
+      !chef_id ||
+      !available
+    ) {
+      throw new Error(
+        'Either food title, country, category, ingredients, availability is missing.'
+      )
+    } else {
+      const { rows } = await db.query(
+        `INSERT INTO food (
+          food_title,
+          country,
+          category,
+          ingredients,
+          description,
+          chef_id,
+          rating,
+          available
+        ) VALUES (
+          '${food_title}',
+          '${country}',
+          '${category}',
+          '${ingredients}',
+          '${description}',
+          ${chef_id},
+          ${rating},
+          ${available}
+        )RETURNING *`
+      )
+      res.json({ rows })
+      console.log('rows from post', rows[0])
+    }
+  } catch (err) {
+    console.error(err.message)
+    res.json(err.message)
+  }
+})
 // Define a GET route for fetching the list of food
 // router.get('/food', async (req, res) => {
 //   try {
