@@ -112,5 +112,15 @@ router.get('/food', async (req, res) => {
   }
 })
 
+// Update food info with PATCH
+router.patch('food/:foodId', async (req, res) => {
+  try {
+    //code
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Export the router
 export default router

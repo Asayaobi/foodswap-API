@@ -33,7 +33,6 @@ router.get('/users/:userId', async (req, res) => {
 // Update user info with PATCH
 router.patch('/users/:userId', async (req, res) => {
   try {
-    //code
     const { firstname, lastname, email, password, profile_image, city } =
       req.body
     let query = `UPDATE users SET `
