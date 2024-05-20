@@ -10,7 +10,11 @@ router.get('/bookings', async (req, res) => {
       `SELECT * FROM bookings WHERE user_id = ${user_id}`
     )
     console.log(`bookings of user id ${user_id}`, rows)
-    res.json(rows)
+    if (!rows.length) {
+      throw new Error('booking is not found')
+    } else {
+      res.json(rows)
+    }
   } catch (err) {
     console.error(err.message)
     res.json(err)
@@ -18,18 +22,18 @@ router.get('/bookings', async (req, res) => {
 })
 
 // Define a GET route for fetching a single booking
-router.get('/bookings/1', async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      'SELECT * FROM bookings WHERE booking_id = 1'
-    )
-    console.log('rows bookingid1', rows)
-    res.json(rows)
-  } catch (err) {
-    console.error(err.message)
-    res.json(err)
-  }
-})
+// router.get('/bookings/1', async (req, res) => {
+//   try {
+//     const { rows } = await db.query(
+//       'SELECT * FROM bookings WHERE booking_id = 1'
+//     )
+//     console.log('rows bookingid1', rows)
+//     res.json(rows)
+//   } catch (err) {
+//     console.error(err.message)
+//     res.json(err)
+//   }
+// })
 
 // Export the router
 export default router
