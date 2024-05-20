@@ -2,6 +2,25 @@ import { Router } from 'express'
 import db from '../db.js'
 const router = Router()
 
+//Post a reservation for the dish
+router.post('/bookings', async (req, res) => {
+  try {
+    const { food_id, user_id, message, booking_date } = req.body
+    if (!food_id || !user_id) {
+      throw new Error('Either food_id or user_id is missing')
+    }
+    const { rows } = await db.query(
+      `INSERT INTO bookings(food_id,user_id,message,booking_date)
+      VALUES(${food_id}, ${user_id}, '${message}','${booking_date}') RETURNING *`
+    )
+    console.log('post booking response', rows[0])
+    res.json(rows[0])
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Define a GET route for fetching the list of booking from each user
 router.get('/bookings', async (req, res) => {
   try {
