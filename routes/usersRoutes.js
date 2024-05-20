@@ -36,7 +36,7 @@ router.patch('/users/:userId', async (req, res) => {
     const { firstname, lastname, email, password, profile_image, city } =
       req.body
     let query = `UPDATE users SET `
-    const setArray = []
+    let setArray = []
     if (firstname) {
       setArray.push(`firstname = '${firstname}'`)
     }

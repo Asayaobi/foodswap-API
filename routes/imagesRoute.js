@@ -37,7 +37,21 @@ router.get('/images', async (req, res) => {
 // Update image info with PATCH
 router.patch('/images/:imageId', async (req, res) => {
   try {
-    //code
+    const { food_id, url } = req.body
+    let query = `UPDATE images SET `
+    let setArray = []
+    if (food_id) {
+      setArray.push(`food_id = ${food_id}`)
+    }
+    if (url) {
+      setArray.push(`url = '${url}'`)
+    }
+    query += setArray.join(',')
+    query += ` WHERE image_id = ${req.params.imageId} RETURNING *`
+    console.log('query', query)
+    const updateImage = await db.query(query)
+    res.json(updateImage.rows[0])
+    console.log('update Image', updateImage.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
