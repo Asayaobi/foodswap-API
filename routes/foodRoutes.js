@@ -35,7 +35,6 @@ router.get('/food', async (req, res) => {
   try {
     const { search, country, category, available } = req.query
     let query = `SELECT * FROM food WHERE available = true`
-    const queryParams = []
     if (req.query.search) {
       query += ` AND food_title LIKE '%${req.query.search}%' OR description LIKE '%${req.query.search}%' OR ingredients LIKE '%${req.query.search}%'`
     }
