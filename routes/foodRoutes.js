@@ -16,10 +16,14 @@ router.get('/food', async (req, res) => {
 
 // Define a GET route for fetching a single dish
 router.get('/food/:foodId', async (req, res) => {
-  const { rows } = await db.query(
-    `SELECT * FROM food WHERE food_id = ${req.params.foodId}`
-  )
-  res.json({ rows })
+  try {
+    const { rows } = await db.query(
+      `SELECT * FROM food WHERE food_id = ${req.params.foodId}`
+    )
+    res.json({ rows })
+  } catch (err) {
+    console.err(err.message)
+  }
 })
 
 // Export the router
