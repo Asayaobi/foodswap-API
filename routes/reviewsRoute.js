@@ -9,8 +9,12 @@ router.get('/reviews', async (req, res) => {
     const { rows } = await db.query(
       `SELECT * FROM reviews WHERE food_id = ${food_id}`
     )
-    console.log('rows reviews', rows)
-    res.json(rows)
+    if (!rows.length) {
+      throw new Error('review is not found')
+    } else {
+      console.log('rows reviews', rows)
+      res.json(rows)
+    }
   } catch (err) {
     console.error(err.message)
     res.json(err)
