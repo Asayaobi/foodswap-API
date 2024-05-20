@@ -113,9 +113,51 @@ router.get('/food', async (req, res) => {
 })
 
 // Update food info with PATCH
-router.patch('food/:foodId', async (req, res) => {
+router.patch('/food/:foodId', async (req, res) => {
   try {
-    //code
+    const {
+      food_title,
+      country,
+      category,
+      ingredients,
+      description,
+      chef_id,
+      rating,
+      available
+    } = req.body
+    console.log('body', req.body)
+    let query = `UPDATE food SET `
+    const setArray = []
+    if (food_title) {
+      setArray.push(`food_title = '${food_title}'`)
+    }
+    if (country) {
+      setArray.push(`country = '${country}'`)
+    }
+    if (category) {
+      setArray.push(`category = '${category}'`)
+    }
+    if (ingredients) {
+      setArray.push(`ingredients = '${ingredients}'`)
+    }
+    if (description) {
+      setArray.push(`description = '${description}'`)
+    }
+    if (chef_id) {
+      setArray.push(`chef_id = ${chef_id}`)
+    }
+    if (rating) {
+      setArray.push(`rating = ${rating}`)
+    }
+    if (available) {
+      setArray.push(`available = ${available}`)
+    }
+    query += setArray.join(',')
+    query += ` WHERE food_id = ${req.params.foodId} RETURNING *`
+    console.log('query', query)
+    const updateFood = await db.query(query)
+    res.json(updateFood.rows[0])
+    console.log('updatefood', updateFood.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
