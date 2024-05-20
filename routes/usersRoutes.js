@@ -56,11 +56,9 @@ router.patch('/users/:userId', async (req, res) => {
     if (city) {
       setArray.push(`city = '${city}'`)
     }
-    console.log('setArray', setArray)
     query += setArray.join(', ')
-    console.log('querryArrayjoint', query)
     query += ` WHERE user_id = ${req.params.userId} RETURNING *`
-    console.log('allqueryfordb', query)
+    console.log('query', query)
     const updateUser = await db.query(query)
     res.json(updateUser.rows[0])
     console.log('updateUser', updateUser.rows[0])
