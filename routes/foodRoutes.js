@@ -20,9 +20,13 @@ router.get('/food/:foodId', async (req, res) => {
     const { rows } = await db.query(
       `SELECT * FROM food WHERE food_id = ${req.params.foodId}`
     )
-    res.json({ rows })
+    if (rows.length > 0) {
+      res.json(rows[0])
+    } else {
+      throw new Error('Food item not found')
+    }
   } catch (err) {
-    console.err(err.message)
+    console.error(err.message)
   }
 })
 
