@@ -20,6 +20,9 @@ router.get('/users/:userId', async (req, res) => {
     const { rows } = await db.query(
       `SELECT * FROM users WHERE user_id = ${req.params.userId}`
     )
+    if (!rows.length) {
+      throw new Error('user is not found')
+    }
     res.json(rows[0])
   } catch (err) {
     console.error(err.message)
