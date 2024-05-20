@@ -18,6 +18,7 @@ app.use(bookingsRouter)
 app.use(reviewsRouter)
 app.use(imagesRouter)
 app.use(authRouter)
+app.use(express.json())
 
 // create routes
 app.get('/', (req, res) => {
