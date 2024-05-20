@@ -2,6 +2,8 @@
 import express from 'express'
 // run the express function
 const app = express()
+// Middleware to parse JSON bodies
+app.use(express.json())
 
 // Import the users router module
 import usersRouter from './routes/usersRoutes.js'
@@ -18,7 +20,6 @@ app.use(bookingsRouter)
 app.use(reviewsRouter)
 app.use(imagesRouter)
 app.use(authRouter)
-app.use(express.json())
 
 // create routes
 app.get('/', (req, res) => {
