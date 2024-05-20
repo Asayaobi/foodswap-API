@@ -34,5 +34,15 @@ router.get('/images', async (req, res) => {
   }
 })
 
+// Update image info with PATCH
+router.patch('/images/:imageId', async (req, res) => {
+  try {
+    //code
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Export the router
 export default router
