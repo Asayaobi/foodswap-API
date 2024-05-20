@@ -5,8 +5,11 @@ const router = Router()
 // Define a GET route for fetching the list of images
 router.get('/images', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM images')
-    console.log('rows images', rows)
+    const food_id = req.query.food_id
+    const { rows } = await db.query(
+      `SELECT * FROM images WHERE food_id = ${food_id}`
+    )
+    console.log(`rows images of food id ${food_id}`, rows)
     res.json(rows)
   } catch (err) {
     console.error(err.message)
