@@ -4,6 +4,12 @@ const router = Router()
 //Post images for food
 router.post('/images', async (req, res) => {
   try {
+    const { food_id, url } = req.body
+    const images = await db.query(
+      `INSERT INTO images(food_id,url) VALUES(${food_id},'${url}') RETURNING *`
+    )
+    console.log('images response', images.rows[0])
+    res.json(images.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
