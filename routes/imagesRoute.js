@@ -58,5 +58,15 @@ router.patch('/images/:imageId', async (req, res) => {
   }
 })
 
+//Delete image
+router.delete('/images/:imageId', async (req, res) => {
+  try {
+    //code
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Export the router
 export default router
