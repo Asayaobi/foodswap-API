@@ -164,5 +164,21 @@ router.patch('/food/:foodId', async (req, res) => {
   }
 })
 
+//Delete Food
+router.delete('/food/:foodId', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+    DELETE FROM food WHERE food_id = ${req.params.foodId}
+  `)
+    if (!rows.length) {
+      throw new Error(`Food id doesn't exist`)
+    }
+    res.json(rows[0])
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Export the router
 export default router
