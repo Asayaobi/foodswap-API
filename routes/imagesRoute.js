@@ -61,7 +61,13 @@ router.patch('/images/:imageId', async (req, res) => {
 //Delete image
 router.delete('/images/:imageId', async (req, res) => {
   try {
-    //code
+    const deleteImage = await db.query(
+      `DELETE FROM images WHERE image_id = ${req.params.imageId} RETURNING *`
+    )
+    if (!deleteImage.rows.length) {
+      throw new Error(`Image id id not found`)
+    }
+    res.json(deleteImage.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
