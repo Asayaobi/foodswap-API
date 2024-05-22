@@ -141,6 +141,18 @@ router.get('/country', async (req, res) => {
   }
 })
 
+//add get request for filter results -- category
+router.get('/category', async (req, res) => {
+  try {
+    let query = `SELECT DISTINCT(category) FROM food`
+    let { rows } = await db.query(query)
+    rows = rows.map((r) => r.category)
+    res.json(rows)
+  } catch (err) {
+    res.json({ error: err.message })
+  }
+})
+
 // Update food info with PATCH
 router.patch('/food/:foodId', async (req, res) => {
   try {
