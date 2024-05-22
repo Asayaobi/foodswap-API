@@ -44,7 +44,7 @@ router.get('/bookings', async (req, res) => {
 router.delete('/bookings/:bookingId', async (req, res) => {
   try {
     const { rows } = await db.query(`
-    DELETE FROM bookings WHERE booking_id = ${req.params.bookingId}
+    DELETE FROM bookings WHERE booking_id = ${req.params.bookingId} RETURNING *
   `)
     if (!rows.length) {
       throw new Error(`This booking doesn't exist`)
