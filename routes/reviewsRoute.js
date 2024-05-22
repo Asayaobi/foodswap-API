@@ -42,5 +42,15 @@ router.get('/reviews', async (req, res) => {
   }
 })
 
+//Delete Reviews
+router.delete('/reviews/:reviewId', async (req, res) => {
+  try {
+    //code
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Export the router
 export default router
