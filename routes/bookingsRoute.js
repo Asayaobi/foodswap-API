@@ -25,9 +25,29 @@ router.post('/bookings', async (req, res) => {
 router.get('/bookings', async (req, res) => {
   try {
     const user_id = req.query.user_id
-    const { rows } = await db.query(
-      `SELECT * FROM bookings WHERE user_id = ${user_id}`
-    )
+    let query = `SELECT 
+      bookings.booking_id,
+      bookings.food_id,
+      bookings.user_id,
+      bookings.message,
+      bookings.booking_date,
+      bookings.swap,
+        food.food_id,
+        food.food_title,
+        food.country,
+        food.chef_id,
+        food.rating,
+        food.available,
+        images.url
+        FROM bookings 
+        LEFT JOIN food ON food.food_id = bookings.food_id
+      LEFT JOIN (
+          SELECT DISTINCT ON (food_id) food_id, url
+          FROM images
+      ) AS images ON images.food_id = food.food_id
+        WHERE user_id = ${user_id}`
+    const { rows } = await db.query(query)
+    console.log('query', query)
     console.log(`bookings of user id ${user_id}`, rows)
     if (!rows.length) {
       throw new Error('booking is not found')
