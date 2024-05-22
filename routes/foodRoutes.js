@@ -75,11 +75,27 @@ router.get('/food/:foodId', async (req, res) => {
     const { rows } = await db.query(
       `SELECT * FROM food WHERE food_id = ${req.params.foodId}`
     )
-    if (rows.length > 0) {
-      res.json(rows[0])
-    } else {
-      throw new Error('Food item not found')
+    if (!rows.length) {
+      throw new Error('food id is not fond')
     }
+    let food = rows[0]
+    // join user
+    let { rows: chefRows } = await db.query(
+      `SELECT user_id, profile_image, firstname, lastname FROM users WHERE user_id = ${food.chef_id}`
+    )
+    food.chef = {
+      user_id: chefRows[0].user_id,
+      profile_image: chefRows[0].profile_image,
+      firstname: chefRows[0].firstname,
+      lastname: chefRows[0].lastname
+    }
+    // join images
+    let { rows: imagesRows } = await db.query(
+      `SELECT * FROM images WHERE food_id = ${food.food_id}`
+    )
+    food.images = imagesRows.map((i) => i.url)
+    delete food.user_id
+    res.json(food)
   } catch (err) {
     console.error(err.message)
   }
