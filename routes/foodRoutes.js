@@ -168,7 +168,7 @@ router.patch('/food/:foodId', async (req, res) => {
 router.delete('/food/:foodId', async (req, res) => {
   try {
     const { rows } = await db.query(`
-    DELETE FROM food WHERE food_id = ${req.params.foodId}
+    DELETE FROM food WHERE food_id = ${req.params.foodId} RETURNING *
   `)
     if (!rows.length) {
       throw new Error(`Food id doesn't exist`)
