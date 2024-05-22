@@ -28,5 +28,5 @@ app.get('/', (req, res) => {
 
 // keep the server open
 app.listen(4000, () => {
-  console.log('Server is ready to accept requests')
+  console.log(`Server is ready to accept requests on PORT 4000`)
 })

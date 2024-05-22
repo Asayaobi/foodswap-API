@@ -40,6 +40,22 @@ router.get('/bookings', async (req, res) => {
   }
 })
 
+//Delete Booking
+router.delete('/bookings/:bookingId', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+    DELETE FROM bookings WHERE booking_id = ${req.params.bookingId}
+  `)
+    if (!rows.length) {
+      throw new Error(`This booking doesn't exist`)
+    }
+    res.json(rows[0])
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Define a GET route for fetching a single booking
 // router.get('/bookings/1', async (req, res) => {
 //   try {
