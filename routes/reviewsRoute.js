@@ -33,12 +33,12 @@ router.get('/reviews', async (req, res) => {
       ORDER BY review_date DESC
     `
     const { rows } = await db.query(sqlquery)
-    if (!rows.length) {
-      throw new Error('review is not found')
-    } else {
-      console.log('rows reviews', rows)
-      res.json(rows)
-    }
+    //adjust time format
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
   } catch (err) {
     console.error(err.message)
     res.json(err)
