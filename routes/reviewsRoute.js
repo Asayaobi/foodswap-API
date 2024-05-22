@@ -26,10 +26,13 @@ router.post('/reviews', async (req, res) => {
 // Define a GET route for fetching the list of reviews
 router.get('/reviews', async (req, res) => {
   try {
-    const food_id = req.query.food_id
-    const { rows } = await db.query(
-      `SELECT * FROM reviews WHERE food_id = ${food_id}`
-    )
+    let sqlquery = `
+      SELECT reviews.*, users.firstname, users.lastname, users.profile_image FROM reviews
+      LEFT JOIN users ON users.user_id = reviews.reviewer_id
+      WHERE food_id = ${req.query.food_id}
+      ORDER BY review_date DESC
+    `
+    const { rows } = await db.query(sqlquery)
     if (!rows.length) {
       throw new Error('review is not found')
     } else {
