@@ -39,6 +39,21 @@ router.get('/reviews', async (req, res) => {
       month: 'short',
       year: 'numeric'
     })
+
+    //arrange data into review
+    let reviews = rows.map((r) => {
+      r.author = {
+        firstname: r.firstname,
+        lastname: r.lastname,
+        profile_image: r.profile_image
+      }
+      r.review_date = formatter.format(new Date(r.review_date))
+      delete r.firstname
+      delete r.lastname
+      delete r.profile_image
+      return r
+    })
+    res.json(reviews)
   } catch (err) {
     console.error(err.message)
     res.json(err)
