@@ -198,6 +198,12 @@ router.get('/city', async (req, res) => {
 // Update food info with PATCH
 router.patch('/food/:foodId', async (req, res) => {
   try {
+    // Validate Token
+    const decodedToken = jwt.verity(res.cookies.jwt, jwtSecret)
+    if (!decodedToken || !decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
+    //Validate Fields
     const {
       food_title,
       country,
