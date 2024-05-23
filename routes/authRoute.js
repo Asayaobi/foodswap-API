@@ -1,8 +1,10 @@
 import { Router } from 'express'
 import db from '../db.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 const router = Router()
+const jwtSecret = process.env.JWT_SECRET
 
 router.post('/signup', async (req, res) => {
   try {
@@ -20,8 +22,18 @@ router.post('/signup', async (req, res) => {
       const { rows } = await db.query(
         `INSERT INTO users (firstname, lastname, email, password, profile_image, city) VALUES ('${firstname}','${lastname}','${email}','${hashedPassword}','${profile_image}','${city}') RETURNING *`
       )
-      res.json(rows)
-      console.log('response', rows)
+      // create payload data from the database
+      const payload = {
+        email: rows[0].email,
+        id: rows[0].user_id
+      }
+      console.log('payload', payload)
+      // Generate a token
+      const token = jwt.sign(payload, jwtSecret)
+      //Put the jwt in the cookie
+      res.cookie('jwt', jwt)
+      // Send the jwt in the cookie with the response
+      res.send({ message: 'logged in' })
     }
   } catch (err) {
     console.error(err.message)
