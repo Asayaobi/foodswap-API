@@ -1,8 +1,10 @@
-// import express
 import express from 'express'
+import cookieParser from 'cookie-parser'
+
 // run the express function
 const app = express()
-// Middleware to parse JSON bodies
+// Middleware
+app.use(cookieParser())
 app.use(express.json())
 
 // Import the users router module
