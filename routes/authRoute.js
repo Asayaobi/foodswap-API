@@ -39,7 +39,7 @@ router.post('/signup', async (req, res) => {
       // Generate a token
       const token = jwt.sign(payload, jwtSecret)
       //Put the jwt in the cookie
-      res.cookie('jwt', jwt)
+      res.cookie('jwt', token)
       // Send the jwt in the cookie with the response
       res.send({ message: 'logged in' })
     }
