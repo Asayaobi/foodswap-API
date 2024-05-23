@@ -153,6 +153,18 @@ router.get('/category', async (req, res) => {
   }
 })
 
+//add get request for filter results -- city
+router.get('/city', async (req, res) => {
+  try {
+    let query = `SELECT DISTINCT(city) FROM users`
+    let { rows } = await db.query(query)
+    rows = rows.map((r) => r.city)
+    res.json(rows)
+  } catch (err) {
+    res.json({ error: err.message })
+  }
+})
+
 // Update food info with PATCH
 router.patch('/food/:foodId', async (req, res) => {
   try {
