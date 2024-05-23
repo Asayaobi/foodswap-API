@@ -61,11 +61,22 @@ router.post('/login', async (req, res) => {
         WHERE email = '${email}'`
       )
       console.log('log in data', rows[0])
-      //compare password
+      //verify password
       const hashedPassword = rows[0].password
       const isPasswordValid = await bcrypt.compare(password, hashedPassword)
       if (isPasswordValid) {
-        res.json(rows[0])
+        //create payload - jwt token
+        const payload = {
+          email: rows[0].email,
+          id: rows[0].user_id
+        }
+        console.log('payload login', payload)
+        // Generate a token
+        const token = jwt.sign(payload, jwtSecret)
+        //Put the jwt in the cookie
+        res.cookie('jwt', token)
+        // Send the jwt in the cookie with the response
+        res.send({ message: 'logged in' })
       } else {
         res.send(`your password is not correct`)
       }
