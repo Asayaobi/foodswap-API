@@ -33,7 +33,7 @@ router.post('/signup', async (req, res) => {
       // create payload data from the database
       const payload = {
         email: rows[0].email,
-        id: rows[0].user_id
+        user_id: rows[0].user_id
       }
       console.log('payload', payload)
       // Generate a token
@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
         //create payload - jwt token
         const payload = {
           email: rows[0].email,
-          id: rows[0].user_id
+          user_id: rows[0].user_id
         }
         console.log('payload login', payload)
         // Generate a token
