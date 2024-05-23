@@ -1,35 +1,37 @@
 import { Router } from 'express'
 import db from '../db.js'
+import jwt from 'jsonwebtoken'
+import { clearConfigCache } from 'prettier'
+
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
 // Post a new dish
 router.post('/food', async (req, res) => {
   try {
+    // Validate Token
+    const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decoded token', decoded)
+    if (!decoded.user_id || !decoded.email) {
+      throw new Error('Invalid authentication token')
+    }
+    // Validate fields
     const {
       food_title,
       country,
       category,
       ingredients,
       description,
-      chef_id,
       rating,
       available
     } = req.body
     console.log('reqbody', req.body)
-    if (
-      !food_title ||
-      !country ||
-      !category ||
-      !ingredients ||
-      !chef_id ||
-      !available
-    ) {
+    if (!food_title || !country || !category || !ingredients || !available) {
       throw new Error(
         'Either food title, country, category, ingredients, availability is missing.'
       )
     } else {
-      const { rows } = await db.query(
-        `INSERT INTO food (
+      let query = `INSERT INTO food (
           food_title,
           country,
           category,
@@ -44,11 +46,12 @@ router.post('/food', async (req, res) => {
           '${category}',
           '${ingredients}',
           '${description}',
-          ${chef_id},
+          ${decoded.user_id},
           ${rating},
           ${available}
         )RETURNING *`
-      )
+      const { rows } = await db.query(query)
+      console.log('query', query)
       res.json({ rows })
       console.log('rows from post', rows[0])
     }
