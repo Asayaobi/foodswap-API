@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import db from '../db.js'
 import jwt from 'jsonwebtoken'
-import { clearConfigCache } from 'prettier'
 
 const jwtSecret = process.env.JWT_SECRET
 const router = Router()
@@ -31,17 +30,18 @@ router.post('/food', async (req, res) => {
       throw new Error(
         'Either food title, country, category, ingredients, availability, or photo is missing.'
       )
-      // Validate images
-      if (!Array.isArray(images)) {
-        throw new Error('photos must be an array')
-      }
-      if (!images.length) {
-        throw new Error('photos array cannot be empty')
-      }
-      if (!images.every((p) => typeof p === 'string' && p.length)) {
-        throw new Error('all photos must be strings and must not be empty')
-      }
     }
+    // Validate images
+    if (!Array.isArray(images)) {
+      throw new Error('photos must be an array')
+    }
+    if (!images.length) {
+      throw new Error('photos array cannot be empty')
+    }
+    if (!images.every((p) => typeof p === 'string' && p.length)) {
+      throw new Error('all photos must be strings and must not be empty')
+    }
+
     //create food
     let query = `INSERT INTO food (
           food_title,
