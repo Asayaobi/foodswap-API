@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import db from '../db.js'
+import bcrypt from 'bcrypt'
+
 const router = Router()
 
 router.post('/signup', async (req, res) => {
@@ -11,8 +13,12 @@ router.post('/signup', async (req, res) => {
         'Either first name, last name, email, password is missing.'
       )
     } else {
+      //hash password
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(password, salt)
+      //send query to database
       const { rows } = await db.query(
-        `INSERT INTO users (firstname, lastname, email, password, profile_image, city) VALUES ('${firstname}','${lastname}','${email}','${password}','${profile_image}','${city}') RETURNING *`
+        `INSERT INTO users (firstname, lastname, email, password, profile_image, city) VALUES ('${firstname}','${lastname}','${email}','${hashedPassword}','${profile_image}','${city}') RETURNING *`
       )
       res.json(rows)
       console.log('response', rows)
