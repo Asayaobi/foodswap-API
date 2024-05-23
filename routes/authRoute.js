@@ -35,13 +35,20 @@ router.post('/login', async (req, res) => {
     if (!email || !password) {
       throw new Error('Either your email or your password is missing')
     } else {
+      //recieve data from query
       const { rows } = await db.query(
         `SELECT * FROM users 
-        WHERE email = '${email}' 
-        AND password = '${password}'`
+        WHERE email = '${email}'`
       )
-      console.log('log in rows', rows[0])
-      res.json(rows[0])
+      console.log('log in data', rows[0])
+      //compare password
+      const hashedPassword = rows[0].password
+      const isPasswordValid = await bcrypt.compare(password, hashedPassword)
+      if (isPasswordValid) {
+        res.json(rows[0])
+      } else {
+        res.send(`your password is not correct`)
+      }
     }
   } catch (err) {
     console.error(err.message)
