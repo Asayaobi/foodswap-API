@@ -23,15 +23,27 @@ router.post('/food', async (req, res) => {
       ingredients,
       description,
       rating,
-      available
+      available,
+      images
     } = req.body
     console.log('reqbody', req.body)
     if (!food_title || !country || !category || !ingredients || !available) {
       throw new Error(
-        'Either food title, country, category, ingredients, availability is missing.'
+        'Either food title, country, category, ingredients, availability, or photo is missing.'
       )
-    } else {
-      let query = `INSERT INTO food (
+      // Validate images
+      if (!Array.isArray(images)) {
+        throw new Error('photos must be an array')
+      }
+      if (!images.length) {
+        throw new Error('photos array cannot be empty')
+      }
+      if (!images.every((p) => typeof p === 'string' && p.length)) {
+        throw new Error('all photos must be strings and must not be empty')
+      }
+    }
+    //create food
+    let query = `INSERT INTO food (
           food_title,
           country,
           category,
@@ -50,11 +62,26 @@ router.post('/food', async (req, res) => {
           ${rating},
           ${available}
         )RETURNING *`
-      const { rows } = await db.query(query)
-      console.log('query', query)
-      res.json({ rows })
-      console.log('rows from post', rows[0])
-    }
+    const foodCreated = await db.query(query)
+    let food = foodCreated.rows[0]
+
+    // Create photos
+    let photosQuery = 'INSERT INTO images (food_id, url) VALUES '
+    images.forEach((p, i) => {
+      if (i === images.length - 1) {
+        photosQuery += `(${food.food_id}, '${p}') `
+      } else {
+        photosQuery += `(${food.food_id}, '${p}'), `
+      }
+    })
+    photosQuery += 'RETURNING *'
+    let photosCreated = await db.query(photosQuery)
+    // Compose response
+    food.photo = photosCreated.rows[0].photo
+    food.rating = 0
+    // Respond
+    res.json(food)
+    console.log('from post food', food)
   } catch (err) {
     console.error(err.message)
     res.json(err.message)
