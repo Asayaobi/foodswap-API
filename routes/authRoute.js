@@ -14,6 +14,14 @@ router.post('/signup', async (req, res) => {
       throw new Error(
         'Either first name, last name, email, password is missing.'
       )
+    }
+    //send query to database to check if email is already exist
+    const checkEmail = await db.query(
+      `SELECT * FROM users WHERE email = '${email}'`
+    )
+    console.log('checkEmail', checkEmail.rowCount)
+    if (checkEmail.rowCount) {
+      res.send(`This email is already exist`)
     } else {
       //hash password
       const salt = await bcrypt.genSalt(10)
