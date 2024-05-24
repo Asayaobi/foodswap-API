@@ -263,7 +263,7 @@ router.patch('/food/:foodId', async (req, res) => {
       console.log('oldImages', oldImages)
       console.log('images', images)
       if (!oldImages) {
-        //if there's no existed images
+        //if there's no existed image
         const imageInserts = images
           .map((url) => `('${url}', ${req.params.foodId})`)
           .join(',')
@@ -271,7 +271,7 @@ router.patch('/food/:foodId', async (req, res) => {
         const updateFood = await db.query(insertImagesQuery)
         console.log(`${updateFood.rowCount} images inserted successfully`)
       } else {
-        //if there's existed images
+        //if there're existed images
         function replaceUrls(oldImages, newUrls) {
           for (let i = 0; i < oldImages.length && i < newUrls.length; i++) {
             oldImages[i].url = newUrls[i]
