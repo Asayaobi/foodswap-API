@@ -273,11 +273,17 @@ router.patch('/food/:foodId', async (req, res) => {
 //Delete Food
 router.delete('/food/:foodId', async (req, res) => {
   try {
+    //Validate Token
+    let decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('You are not authorized')
+    }
     const { rows } = await db.query(`
-    DELETE FROM food WHERE food_id = ${req.params.foodId} RETURNING *
+    DELETE FROM food WHERE food_id = ${req.params.foodId} AND chef_id = ${decodedToken.user_id} RETURNING *
   `)
     if (!rows.length) {
-      throw new Error(`Food id doesn't exist`)
+      throw new Error(`You are not authorized to delete this item`)
     }
     res.json(rows[0])
   } catch (err) {
