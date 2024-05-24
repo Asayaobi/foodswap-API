@@ -201,7 +201,8 @@ router.get('/city', async (req, res) => {
 router.patch('/food/:foodId', async (req, res) => {
   try {
     // Validate Token
-    const decodedToken = jwt.verity(res.cookies.jwt, jwtSecret)
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decoded token', decodedToken)
     if (!decodedToken || !decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -212,65 +213,57 @@ router.patch('/food/:foodId', async (req, res) => {
       category,
       ingredients,
       description,
-      chef_id,
-      rating,
       available,
       images
     } = req.body
     console.log('body', req.body)
-    let query = `UPDATE food SET `
-    const setArray = []
-    if (food_title) {
-      setArray.push(`food_title = '${food_title}'`)
-    }
-    if (country) {
-      setArray.push(`country = '${country}'`)
-    }
-    if (category) {
-      setArray.push(`category = '${category}'`)
-    }
-    if (ingredients) {
-      setArray.push(`ingredients = '${ingredients}'`)
-    }
-    if (description) {
-      setArray.push(`description = '${description}'`)
-    }
-    if (chef_id) {
-      setArray.push(`chef_id = ${chef_id}`)
-    }
-    if (rating) {
-      setArray.push(`rating = ${rating}`)
-    }
-    if (available) {
-      setArray.push(`available = ${available}`)
-    }
-    query += setArray.join(',')
-    query += ` WHERE food_id = ${req.params.foodId} RETURNING *`
-    console.log('query', query)
-    const updateFood = await db.query(query)
-    let food = updateFood.rows[0]
 
-    if (images) {
-      // Check if images is an array
-      if (!Array.isArray(images)) {
-        throw new Error('images must be an array of image URLs')
+    if (
+      food_title ||
+      country ||
+      category ||
+      ingredients ||
+      description ||
+      available
+    ) {
+      let query = `UPDATE food SET `
+      const setArray = []
+      if (food_title) {
+        setArray.push(`food_title = '${food_title}'`)
       }
-      // Construct a subquery to insert/update images table
-      const imageSubQuery = images
+      if (country) {
+        setArray.push(`country = '${country}'`)
+      }
+      if (category) {
+        setArray.push(`category = '${category}'`)
+      }
+      if (ingredients) {
+        setArray.push(`ingredients = '${ingredients}'`)
+      }
+      if (description) {
+        setArray.push(`description = '${description}'`)
+      }
+      if (available) {
+        setArray.push(`available = ${available}`)
+      }
+      query += setArray.join(', ')
+      query += ` WHERE food_id = ${req.params.foodId} AND chef_id = ${decodedToken.user_id} RETURNING *`
+      console.log('query for update food', query)
+      const updateFood = await db.query(query)
+      let food = updateFood.rows[0]
+      console.log('updatefood', food)
+    }
+
+    // Insert images into images table
+    if (images && Array.isArray(images)) {
+      const imageInserts = images
         .map((url) => `('${url}', ${req.params.foodId})`)
         .join(',')
-      setArray.push(
-        `pic_url = (SELECT array_agg(url) FROM images WHERE food_id = ${req.params.foodId} UNION ALL VALUES ${imageSubQuery})`
-      )
+      const insertImagesQuery = `INSERT INTO images (url, food_id) VALUES ${imageInserts}`
+      const updateFood = await db.query(insertImagesQuery)
+      console.log(`${updateFood.rowCount} images inserted successfully`)
     }
-    query += setArray.join(',')
-    query += ` WHERE food_id = ${req.params.foodId} RETURNING *`
-    console.log('query', query)
-    updateFood = await db.query(query)
-    food.images = updateFood.rows[0]
-    console.log('updatefood', food)
     res.json(food)
-    //console.log('updatefood', updateFood.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
