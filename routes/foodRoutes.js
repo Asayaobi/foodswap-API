@@ -50,7 +50,6 @@ router.post('/food', async (req, res) => {
           ingredients,
           description,
           chef_id,
-          rating,
           available
         ) VALUES (
           '${food_title}',
@@ -59,9 +58,9 @@ router.post('/food', async (req, res) => {
           '${ingredients}',
           '${description}',
           ${decoded.user_id},
-          ${rating},
           ${available}
         )RETURNING *`
+    console.log('query for food info', query)
     const foodCreated = await db.query(query)
     let food = foodCreated.rows[0]
 
@@ -75,9 +74,12 @@ router.post('/food', async (req, res) => {
       }
     })
     photosQuery += 'RETURNING *'
+    console.log('photoquery', photosQuery)
     let photosCreated = await db.query(photosQuery)
     // Compose response
-    food.photo = photosCreated.rows[0].photo
+    let photosArray = photosCreated.rows
+    console.log('photosArrayd', photosArray)
+    food.images = photosArray.map((row) => row.url)
     food.rating = 0
     // Respond
     res.json(food)
@@ -212,7 +214,8 @@ router.patch('/food/:foodId', async (req, res) => {
       description,
       chef_id,
       rating,
-      available
+      available,
+      images
     } = req.body
     console.log('body', req.body)
     let query = `UPDATE food SET `
@@ -245,8 +248,29 @@ router.patch('/food/:foodId', async (req, res) => {
     query += ` WHERE food_id = ${req.params.foodId} RETURNING *`
     console.log('query', query)
     const updateFood = await db.query(query)
-    res.json(updateFood.rows[0])
-    console.log('updatefood', updateFood.rows[0])
+    let food = updateFood.rows[0]
+
+    if (images) {
+      // Check if images is an array
+      if (!Array.isArray(images)) {
+        throw new Error('images must be an array of image URLs')
+      }
+      // Construct a subquery to insert/update images table
+      const imageSubQuery = images
+        .map((url) => `('${url}', ${req.params.foodId})`)
+        .join(',')
+      setArray.push(
+        `pic_url = (SELECT array_agg(url) FROM images WHERE food_id = ${req.params.foodId} UNION ALL VALUES ${imageSubQuery})`
+      )
+    }
+    query += setArray.join(',')
+    query += ` WHERE food_id = ${req.params.foodId} RETURNING *`
+    console.log('query', query)
+    updateFood = await db.query(query)
+    food.images = updateFood.rows[0]
+    console.log('updatefood', food)
+    res.json(food)
+    //console.log('updatefood', updateFood.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
