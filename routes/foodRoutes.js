@@ -213,8 +213,7 @@ router.patch('/food/:foodId', async (req, res) => {
       category,
       ingredients,
       description,
-      available,
-      images
+      available
     } = req.body
     console.log('body', req.body)
 
@@ -255,13 +254,40 @@ router.patch('/food/:foodId', async (req, res) => {
     }
 
     // Insert images into images table
+    let images = req.body.images
     if (images && Array.isArray(images)) {
-      const imageInserts = images
-        .map((url) => `('${url}', ${req.params.foodId})`)
-        .join(',')
-      const insertImagesQuery = `INSERT INTO images (url, food_id) VALUES ${imageInserts}`
-      const updateFood = await db.query(insertImagesQuery)
-      console.log(`${updateFood.rowCount} images inserted successfully`)
+      const getOldimages = await db.query(
+        `SELECT * FROM images WHERE food_id = ${req.params.foodId}`
+      )
+      const oldImages = getOldimages.rows
+      console.log('oldImages', oldImages)
+      console.log('images', images)
+      if (!oldImages) {
+        //if there's no existed images
+        const imageInserts = images
+          .map((url) => `('${url}', ${req.params.foodId})`)
+          .join(',')
+        const insertImagesQuery = `INSERT INTO images (url, food_id) VALUES ${imageInserts}`
+        const updateFood = await db.query(insertImagesQuery)
+        console.log(`${updateFood.rowCount} images inserted successfully`)
+      } else {
+        //if there's existed images
+        function replaceUrls(oldImages, newUrls) {
+          for (let i = 0; i < oldImages.length && i < newUrls.length; i++) {
+            oldImages[i].url = newUrls[i]
+          }
+          return oldImages
+        }
+        let newImages = replaceUrls(oldImages, images)
+        // Update the URLs in the database
+        for (const img of newImages) {
+          await db.query(`UPDATE images SET url = $1 WHERE image_id = $2`, [
+            img.url,
+            img.image_id
+          ])
+        }
+        console.log('Updated images', newImages)
+      }
     }
     res.json(food)
   } catch (err) {
