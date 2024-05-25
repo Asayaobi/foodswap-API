@@ -12,7 +12,7 @@ router.post('/images', async (req, res) => {
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
-    const { food_id, url } = req.body
+    const food_id = req.body.food_id
     //check if this item belongs to this user_id
     const userCheck = await db.query(
       `SELECT * FROM food WHERE chef_id = ${decodedToken.user_id} AND food_id = ${food_id}`
@@ -22,11 +22,23 @@ router.post('/images', async (req, res) => {
     if (foodFromUser.rowCount === 0) {
       throw new Error('You are not authorized')
     } else {
-      const images = await db.query(
-        `INSERT INTO images(food_id,url) VALUES(${food_id},'${url}') RETURNING *`
-      )
-      console.log('images response', images.rows[0])
-      res.json(images.rows[0])
+      //add array of images
+      const imagesArray = req.body.images
+      let query = `INSERT INTO images(food_id,url) VALUES`
+      const setUrl = (imagesArray, food_id) => {
+        let setArray = []
+        for (let i = 0; i < imagesArray.length; i++) {
+          setArray.push(`(${food_id}, '${imagesArray[i]}')`)
+        }
+        return setArray.join(',')
+      }
+      query += setUrl(imagesArray, food_id)
+      query += ' RETURNING *'
+      console.log('query', query)
+      //send query
+      const images = await db.query(query)
+      console.log('images response', images.rows)
+      res.json(images.rows)
     }
   } catch (err) {
     console.error(err.message)
