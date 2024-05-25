@@ -13,11 +13,21 @@ router.post('/images', async (req, res) => {
       throw new Error('Invalid authentication token')
     }
     const { food_id, url } = req.body
-    const images = await db.query(
-      `INSERT INTO images(food_id,url) VALUES(${food_id},'${url}') RETURNING *`
+    //check if this item belongs to this user_id
+    const userCheck = await db.query(
+      `SELECT * FROM food WHERE chef_id = ${decodedToken.user_id} AND food_id = ${food_id}`
     )
-    console.log('images response', images.rows[0])
-    res.json(images.rows[0])
+    let foodFromUser = userCheck.rows
+    console.log('foodFromUser-userCheck rows', foodFromUser)
+    if (foodFromUser.rowCount === 0) {
+      throw new Error('You are not authorized')
+    } else {
+      const images = await db.query(
+        `INSERT INTO images(food_id,url) VALUES(${food_id},'${url}') RETURNING *`
+      )
+      console.log('images response', images.rows[0])
+      res.json(images.rows[0])
+    }
   } catch (err) {
     console.error(err.message)
     res.json(err)
