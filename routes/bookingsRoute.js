@@ -36,7 +36,7 @@ router.get('/bookings', async (req, res) => {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
     console.log('decodedToken', decodedToken)
-    if (!decoded.user_id || !decoded.email) {
+    if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
     const user_id = decodedToken.user_id

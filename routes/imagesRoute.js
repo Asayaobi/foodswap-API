@@ -1,9 +1,17 @@
 import { Router } from 'express'
 import db from '../db.js'
+import jwt from 'jsonwebtoken'
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 //Post images for food
 router.post('/images', async (req, res) => {
   try {
+    //Validate field
+    let decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
     const { food_id, url } = req.body
     const images = await db.query(
       `INSERT INTO images(food_id,url) VALUES(${food_id},'${url}') RETURNING *`
