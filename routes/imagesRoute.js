@@ -98,13 +98,32 @@ router.patch('/images/:imageId', async (req, res) => {
 //Delete image
 router.delete('/images/:imageId', async (req, res) => {
   try {
-    const deleteImage = await db.query(
-      `DELETE FROM images WHERE image_id = ${req.params.imageId} RETURNING *`
-    )
-    if (!deleteImage.rows.length) {
-      throw new Error(`Image id id not found`)
+    //Validate Token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
     }
-    res.json(deleteImage.rows[0])
+    //check user
+    const getFoodId = await db.query(
+      `SELECT food_id FROM images WHERE image_id = ${req.params.imageId}`
+    )
+    console.log('getFoodId', getFoodId.rows[0])
+    const food_id = getFoodId.rows[0].food_id
+    const checkUser = await db.query(
+      `SELECT * FROM food WHERE food_id = ${food_id} AND chef_id = ${decodedToken.user_id}`
+    )
+    console.log('checkUser', checkUser.rows)
+    if (checkUser.rowCount === 0) {
+      throw new Error('You are not authorized.')
+    } else {
+      const deleteImage = await db.query(
+        `DELETE FROM images WHERE image_id = ${req.params.imageId} RETURNING *`
+      )
+      if (!deleteImage.rows.length) {
+        throw new Error(`Image id id not found`)
+      }
+      res.json(deleteImage.rows[0])
+    }
   } catch (err) {
     console.error(err.message)
     res.json(err)
