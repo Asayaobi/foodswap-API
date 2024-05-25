@@ -251,7 +251,7 @@ router.patch('/food/:foodId', async (req, res) => {
       query += ` WHERE food_id = ${req.params.foodId} AND chef_id = ${decodedToken.user_id} RETURNING *`
       console.log('query for update food', query)
       const updateFood = await db.query(query)
-      let food = updateFood.rows[0]
+      food = updateFood.rows[0]
       console.log('updatefood', food)
     }
 
