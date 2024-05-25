@@ -13,9 +13,10 @@ router.post('/bookings', async (req, res) => {
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
-    const { food_id, user_id, message, booking_date } = req.body
-    if (!food_id || !user_id) {
-      throw new Error('Either food_id or user_id is missing')
+    const { food_id, message, booking_date } = req.body
+    //Validate Field
+    if (!food_id) {
+      throw new Error(' food_id is missing')
     }
     const { rows } = await db.query(
       `INSERT INTO bookings(food_id,user_id,message,booking_date)
