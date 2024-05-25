@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import db from '../db.js'
+import jwt from 'jsonwebtoken'
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
 //Post a reservation for the dish
