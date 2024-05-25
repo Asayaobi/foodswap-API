@@ -33,6 +33,9 @@ router.post('/bookings', async (req, res) => {
 // Define a GET route for fetching the list of booking from each user
 router.get('/bookings', async (req, res) => {
   try {
+    //Validate Token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
     const user_id = req.query.user_id
     let query = `SELECT 
       bookings.booking_id,
