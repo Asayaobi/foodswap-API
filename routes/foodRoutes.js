@@ -217,6 +217,8 @@ router.patch('/food/:foodId', async (req, res) => {
     } = req.body
     console.log('body', req.body)
 
+    //Update food table
+    let food
     if (
       food_title ||
       country ||
@@ -262,12 +264,18 @@ router.patch('/food/:foodId', async (req, res) => {
       const oldImages = getOldimages.rows
       console.log('oldImages', oldImages)
       console.log('images', images)
-      if (!oldImages) {
+      if (oldImages.length === 0) {
         //if there's no existed image
-        const imageInserts = images
-          .map((url) => `('${url}', ${req.params.foodId})`)
-          .join(',')
-        const insertImagesQuery = `INSERT INTO images (url, food_id) VALUES ${imageInserts}`
+        const imageInserts = (images) => {
+          for (let i = 0; i < images.length; i++) {
+            images[i] = `(${req.params.foodId}, '${images[i]}')`
+          }
+          let imagesStrings = images.join(', ')
+          return imagesStrings
+        }
+        const updateImage = imageInserts(images)
+        console.log('update string', updateImage)
+        const insertImagesQuery = `INSERT INTO images (food_id, url) VALUES ${updateImage}`
         const updateFood = await db.query(insertImagesQuery)
         console.log(`${updateFood.rowCount} images inserted successfully`)
       } else {
