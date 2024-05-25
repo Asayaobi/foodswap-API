@@ -55,6 +55,13 @@ router.get('/images', async (req, res) => {
 // Update image info with PATCH
 router.patch('/images/:imageId', async (req, res) => {
   try {
+    //validate token
+    const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decoded token', decoded)
+    if (!decoded.user_id || !decoded.email) {
+      throw new Error('Invalid authentication token')
+    }
+
     const { food_id, url } = req.body
     let query = `UPDATE images SET `
     let setArray = []
