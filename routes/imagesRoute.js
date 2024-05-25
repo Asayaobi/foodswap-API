@@ -61,22 +61,29 @@ router.patch('/images/:imageId', async (req, res) => {
     if (!decoded.user_id || !decoded.email) {
       throw new Error('Invalid authentication token')
     }
-
+    //check if this item belongs to this user_id
     const { food_id, url } = req.body
-    let query = `UPDATE images SET `
-    let setArray = []
-    if (food_id) {
-      setArray.push(`food_id = ${food_id}`)
+    const userCheck = await db.query(
+      `SELECT * FROM food WHERE chef_id = ${decodedToken.user_id} AND food_id = ${food_id}`
+    )
+    if (userCheck.rowCount === 0) {
+      throw new Error('You are not authorized.')
+    } else {
+      let query = `UPDATE images SET `
+      let setArray = []
+      if (food_id) {
+        setArray.push(`food_id = ${food_id}`)
+      }
+      if (url) {
+        setArray.push(`url = '${url}'`)
+      }
+      query += setArray.join(',')
+      query += ` WHERE image_id = ${req.params.imageId} RETURNING *`
+      console.log('query', query)
+      const updateImage = await db.query(query)
+      console.log('update Image', updateImage.rows[0])
+      res.json(updateImage.rows[0])
     }
-    if (url) {
-      setArray.push(`url = '${url}'`)
-    }
-    query += setArray.join(',')
-    query += ` WHERE image_id = ${req.params.imageId} RETURNING *`
-    console.log('query', query)
-    const updateImage = await db.query(query)
-    res.json(updateImage.rows[0])
-    console.log('update Image', updateImage.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
