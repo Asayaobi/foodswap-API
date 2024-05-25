@@ -19,7 +19,7 @@ router.post('/bookings', async (req, res) => {
     }
     const { rows } = await db.query(
       `INSERT INTO bookings(food_id,user_id,message,booking_date)
-      VALUES(${food_id}, ${user_id}, '${message}','${booking_date}') RETURNING *`
+      VALUES(${food_id}, ${decodedToken.user_id}, '${message}','${booking_date}') RETURNING *`
     )
     console.log('post booking response', rows[0])
     res.json(rows[0])
