@@ -7,6 +7,12 @@ const router = Router()
 //Post a reservation for the dish
 router.post('/bookings', async (req, res) => {
   try {
+    //Validate Token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
     const { food_id, user_id, message, booking_date } = req.body
     if (!food_id || !user_id) {
       throw new Error('Either food_id or user_id is missing')
