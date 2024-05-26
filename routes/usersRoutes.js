@@ -26,14 +26,14 @@ router.get('/users/:userId', async (req, res) => {
       throw new Error('Invalid authentication token')
     }
     //checks if the requesting user id is the same user id
-    if (decodedToken.user_id === req.params.userId) {
-      const { rows } = await db.query(
-        `SELECT * FROM users WHERE user_id = ${req.params.userId}`
-      )
-    } else {
+    if (decodedToken.user_id != req.params.userId) {
       throw new Error('You are not authorized')
+    } else {
+      const { rows } = await db.query(
+        `SELECT * FROM users WHERE user_id = ${decodedToken.user_id}`
+      )
+      res.json(rows[0])
     }
-    res.json(rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
