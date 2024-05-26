@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import db from '../db.js'
+import jwt from 'jsonwebtoken'
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
 // Define a GET route for fetching the list of users
@@ -17,6 +19,8 @@ router.get('/users', async (req, res) => {
 // Define a GET route for fetching a single user
 router.get('/users/:userId', async (req, res) => {
   try {
+    //Validate Token
+
     const { rows } = await db.query(
       `SELECT * FROM users WHERE user_id = ${req.params.userId}`
     )
