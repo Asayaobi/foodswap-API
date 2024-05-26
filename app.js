@@ -1,9 +1,17 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 
 // run the express function
 const app = express()
 // Middleware
+app.use(
+  cors({
+    origin: true,
+    credentials: true
+  })
+)
+app.options('*', cors())
 app.use(cookieParser())
 app.use(express.json())
 
