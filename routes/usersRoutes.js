@@ -20,7 +20,11 @@ router.get('/users', async (req, res) => {
 router.get('/users/:userId', async (req, res) => {
   try {
     //Validate Token
-
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
     const { rows } = await db.query(
       `SELECT * FROM users WHERE user_id = ${req.params.userId}`
     )
