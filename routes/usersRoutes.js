@@ -43,34 +43,45 @@ router.get('/users/:userId', async (req, res) => {
 // Update user info with PATCH
 router.patch('/users/:userId', async (req, res) => {
   try {
-    const { firstname, lastname, email, password, profile_image, city } =
-      req.body
-    let query = `UPDATE users SET `
-    let setArray = []
-    if (firstname) {
-      setArray.push(`firstname = '${firstname}'`)
+    //validate token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
     }
-    if (lastname) {
-      setArray.push(`lastname = '${lastname}'`)
+    //checks if the requesting user id is the same user id
+    if (decodedToken.user_id != req.params.userId) {
+      throw new Error('You are not authorized')
+    } else {
+      const { firstname, lastname, email, password, profile_image, city } =
+        req.body
+      let query = `UPDATE users SET `
+      let setArray = []
+      if (firstname) {
+        setArray.push(`firstname = '${firstname}'`)
+      }
+      if (lastname) {
+        setArray.push(`lastname = '${lastname}'`)
+      }
+      if (email) {
+        setArray.push(`email = '${email}'`)
+      }
+      if (password) {
+        setArray.push(`password = '${password}'`)
+      }
+      if (profile_image) {
+        setArray.push(`profile_image = '${profile_image}'`)
+      }
+      if (city) {
+        setArray.push(`city = '${city}'`)
+      }
+      query += setArray.join(', ')
+      query += ` WHERE user_id = ${decodedToken.user_id} RETURNING *`
+      console.log('query', query)
+      const updateUser = await db.query(query)
+      res.json(updateUser.rows[0])
+      console.log('updateUser', updateUser.rows[0])
     }
-    if (email) {
-      setArray.push(`email = '${email}'`)
-    }
-    if (password) {
-      setArray.push(`password = '${password}'`)
-    }
-    if (profile_image) {
-      setArray.push(`profile_image = '${profile_image}'`)
-    }
-    if (city) {
-      setArray.push(`city = '${city}'`)
-    }
-    query += setArray.join(', ')
-    query += ` WHERE user_id = ${req.params.userId} RETURNING *`
-    console.log('query', query)
-    const updateUser = await db.query(query)
-    res.json(updateUser.rows[0])
-    console.log('updateUser', updateUser.rows[0])
   } catch (err) {
     console.error(err.message)
     res.json(err)
