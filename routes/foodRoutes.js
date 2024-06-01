@@ -137,7 +137,7 @@ router.get('/food/:foodId', async (req, res) => {
 router.get('/food', async (req, res) => {
   try {
     const { search, country, category, available } = req.query
-    let query = `SELECT * FROM (SELECT DISTINCT ON (food.food_id) food.*, images.url FROM food LEFT JOIN images ON food.food_id = images.image_id WHERE available = true`
+    let query = `SELECT * FROM (SELECT DISTINCT ON (food.food_id) food.*, images.url FROM food LEFT JOIN images ON food.food_id = images.food_id WHERE available = true`
     if (req.query.search) {
       query += ` AND food_title LIKE '%${req.query.search}%' OR description LIKE '%${req.query.search}%' OR ingredients LIKE '%${req.query.search}%'`
     }
