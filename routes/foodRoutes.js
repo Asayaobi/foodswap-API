@@ -21,7 +21,6 @@ router.post('/food', async (req, res) => {
       category,
       ingredients,
       description,
-      rating,
       available,
       images
     } = req.body
