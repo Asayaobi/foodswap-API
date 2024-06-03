@@ -75,6 +75,59 @@ router.get('/bookings', async (req, res) => {
   }
 })
 
+//get booking request
+router.get('/request', async (req, res) => {
+  try {
+    //Validate Token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
+    // 1 get food id from this user
+    const getFoodId = await db.query(
+      `SELECT food_id from food WHERE chef_id = ${decodedToken.user_id}`
+    )
+    console.log('getFoodId', getFoodId.rows)
+    //2 get user who request the food
+    const requestUser = 0
+    const requestUsers = []
+    if (getFoodId.rows.length === 1) {
+      const getRequestUserId = await db.query(
+        `SELECT user_id from bookings WHERE food_id = ${getFoodId.rows[0].food_id}`
+      )
+      requestUser += getRequestUserId.rows[0].user_id
+      console.log(getRequestUserId, getRequestUserId.rows[0].user_id)
+    } else {
+      const foodids = getFoodId.rows
+      let query = `SELECT user_id from bookings WHERE ${foodids.map((e) => `food_id = ${e.food_id}`).join(' OR ')}`
+      console.log('query', query)
+      const getRequestUserId = await db.query(query)
+      console.log('getRequestUserId', getRequestUserId.rows)
+      requestUsers.push(getRequestUserId.rows)
+    }
+    //3 show dishes from those users
+    console.log('requestUsers', requestUsers)
+    if (!requestUser) {
+      let query = `SELECT * FROM food WHERE ${requestUsers[0].map((e) => `chef_id = ${e.user_id}`).join(' OR ')}`
+
+      console.log('query', query)
+      const getFoodOptions = await db.query(query)
+      console.log('getFoodOptions', getFoodOptions.rows)
+      res.send(getFoodOptions.rows)
+    } else {
+      const getFoodOptions = await db.query(
+        `SELECT * FROM food WHERE chef_id = ${requestUser}`
+      )
+      console.log('getFoodOptions', getFoodOptions.rows[0])
+      res.send(getFoodOptions.rows[0])
+    }
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 //Delete Booking
 router.delete('/bookings/:bookingId', async (req, res) => {
   try {
