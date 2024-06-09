@@ -10,10 +10,17 @@ router.post('/signup', async (req, res) => {
   try {
     const { firstname, lastname, email, password, profile_image, city } =
       req.body
-    if (!firstname || !lastname || !email || !password) {
-      throw new Error(
-        'Either first name, last name, email, password is missing.'
-      )
+    if (
+      !firstname ||
+      !lastname ||
+      !email ||
+      !password ||
+      !profile_image ||
+      !city
+    ) {
+      return res.json({
+        error: 'Please complete the form before submitting.'
+      })
     }
     //send query to database to check if email is already exist
     const checkEmail = await db.query(
@@ -21,7 +28,7 @@ router.post('/signup', async (req, res) => {
     )
     console.log('checkEmail', checkEmail.rowCount)
     if (checkEmail.rowCount) {
-      res.send(`This email is already exist`)
+      return res.json({ error: 'This email is already existed' })
     } else {
       //hash password
       const salt = await bcrypt.genSalt(10)
@@ -41,11 +48,11 @@ router.post('/signup', async (req, res) => {
       //Put the jwt in the cookie
       res.cookie('jwt', token)
       // Send the jwt in the cookie with the response
-      res.send({ message: 'logged in' })
+      res.json({ message: 'logged in' })
     }
   } catch (err) {
     console.error(err.message)
-    res.json(err)
+    res.json({ error: 'Internal server error' })
   }
 })
 
