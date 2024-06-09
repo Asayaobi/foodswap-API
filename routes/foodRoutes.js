@@ -26,19 +26,26 @@ router.post('/food', async (req, res) => {
     } = req.body
     console.log('reqbody', req.body)
     if (!food_title || !country || !category || !ingredients || !available) {
-      throw new Error(
-        'Either food title, country, category, ingredients, availability, or photo is missing.'
-      )
+      return res.json({
+        error:
+          'Either food title, country, category, ingredients, availability, or photo is missing.'
+      })
     }
     // Validate images
     if (!Array.isArray(images)) {
-      throw new Error('photos must be an array')
+      return res.json({
+        error: 'images must be an array.'
+      })
     }
     if (!images.length) {
-      throw new Error('photos array cannot be empty')
+      return res.json({
+        error: 'images cannot be empty.'
+      })
     }
     if (!images.every((p) => typeof p === 'string' && p.length)) {
-      throw new Error('all photos must be strings and must not be empty')
+      return res.json({
+        error: 'all images must be strings and cannot be empty.'
+      })
     }
 
     //create food
@@ -81,11 +88,11 @@ router.post('/food', async (req, res) => {
     food.images = photosArray.map((row) => row.url)
     food.rating = 0
     // Respond
-    res.json(food)
+    res.json({ message: 'new food is posted' })
     console.log('from post food', food)
   } catch (err) {
     console.error(err.message)
-    res.json(err.message)
+    res.json({ error: 'Internal server error' })
   }
 })
 // Define a GET route for fetching the list of food from the same user id
