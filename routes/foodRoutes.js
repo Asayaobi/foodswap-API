@@ -88,17 +88,33 @@ router.post('/food', async (req, res) => {
     res.json(err.message)
   }
 })
-// Define a GET route for fetching the list of food
-// router.get('/food', async (req, res) => {
-//   try {
-//     const { rows } = await db.query('SELECT * FROM food')
-//     console.log('rows food', rows)
-//     res.json(rows)
-//   } catch (err) {
-//     console.error(err.message)
-//     res.json(err)
-//   }
-// })
+// Define a GET route for fetching the list of food from the same user id
+router.get('/listings', async (req, res) => {
+  try {
+    // Validate Token
+    const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decoded token', decoded)
+    if (!decoded.user_id || !decoded.email) {
+      throw new Error('Invalid authentication token')
+    }
+    //get the listings
+    const { rows } = await db.query(
+      `SELECT * 
+FROM (
+    SELECT DISTINCT ON (food.food_id) 
+        food.*, 
+        images.url
+    FROM food 
+    LEFT JOIN images ON food.food_id = images.food_id 
+    WHERE chef_id = ${decoded.user_id})`
+    )
+    console.log('rows food', rows)
+    res.json(rows)
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
 
 // Define a GET route for fetching a single dish
 router.get('/food/:foodId', async (req, res) => {
