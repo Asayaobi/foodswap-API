@@ -56,19 +56,24 @@ router.post('/login', async (req, res) => {
       throw new Error('Either your email or your password is missing')
     } else {
       //recieve data from query
-      const { rows } = await db.query(
-        `SELECT * FROM users 
+      const query = `SELECT * FROM users 
         WHERE email = '${email}'`
-      )
-      console.log('log in data', rows[0])
+      console.log(query)
+      const result = await db.query(query)
+      console.log('log in data', result.rows)
+      if (!result.rowCount) {
+        throw new Error(`your email does not exist`)
+      }
       //verify password
-      const hashedPassword = rows[0].password
+      const hashedPassword = result.rows[0].password
+      console.log('hashedPassword', hashedPassword)
+      console.log('password', password)
       const isPasswordValid = await bcrypt.compare(password, hashedPassword)
       if (isPasswordValid) {
         //create payload - jwt token
         const payload = {
-          email: rows[0].email,
-          user_id: rows[0].user_id
+          email: result.rows[0].email,
+          user_id: result.rows[0].user_id
         }
         console.log('payload login', payload)
         // Generate a token
@@ -78,12 +83,12 @@ router.post('/login', async (req, res) => {
         // Send the jwt in the cookie with the response
         res.send({ message: 'logged in' })
       } else {
-        res.send(`your password is not correct`)
+        res.json({ error: 'Your password is not correct' })
       }
     }
   } catch (err) {
     console.error(err.message)
-    res.json(err.message)
+    res.status(400).json({ error: err.message })
   }
 })
 
