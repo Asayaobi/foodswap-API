@@ -90,7 +90,7 @@ router.get('/bookings', async (req, res) => {
           SELECT DISTINCT ON (food_id) food_id, url
           FROM images
       ) AS images ON images.food_id = food.food_id
-        WHERE user_id = ${user_id}`
+        WHERE user_id = ${user_id} AND food.available = true`
     const { rows } = await db.query(query)
     console.log('query', query)
     console.log(`bookings of user id ${user_id}`, rows)
@@ -146,7 +146,7 @@ router.get('/request', async (req, res) => {
           SELECT DISTINCT ON (food_id) food_id, url
           FROM images
       ) AS images ON images.food_id = food.food_id  
-      WHERE ${requestUsers[0].map((e) => `user_id = ${e.user_id}`).join(' OR ')}`
+      WHERE ${requestUsers[0].map((e) => `user_id = ${e.user_id}`).join(' OR ')} AND food.available = true`
 
     console.log('request query', query)
     const getFoodOptions = await db.query(querySwap)
