@@ -25,10 +25,17 @@ router.post('/food', async (req, res) => {
       images
     } = req.body
     console.log('reqbody', req.body)
-    if (!food_title || !country || !category || !ingredients || !available) {
+    if (
+      !food_title ||
+      !country ||
+      !category ||
+      !ingredients ||
+      !available ||
+      !description
+    ) {
       return res.json({
         error:
-          'Either food title, country, category, ingredients, availability, or photo is missing.'
+          'Either food title, country, category, ingredients, description, availability, or images is missing.'
       })
     }
     // Validate images
