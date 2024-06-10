@@ -22,8 +22,8 @@ router.post('/bookings', async (req, res) => {
     const currentDate = new Date().toISOString().split('T')[0]
 
     const { rows } = await db.query(
-      `INSERT INTO bookings(food_id,user_id,booking_date)
-      VALUES(${food_id}, ${decodedToken.user_id}, '${currentDate}') RETURNING *`
+      `INSERT INTO bookings(food_id,user_id,booking_date,swap)
+      VALUES(${food_id}, ${decodedToken.user_id}, '${currentDate}', 'pending') RETURNING *`
     )
     console.log('post booking response', rows[0])
     res.json(rows[0])
