@@ -112,7 +112,12 @@ router.get('/request', async (req, res) => {
     //3 show dishes from those users
     console.log('requestUsers', requestUsers)
     if (!requestUser) {
-      let query = `SELECT food.*, bookings.swap, images.url FROM food 
+      let query = `
+      SELECT DISTINCT ON (food.food_id) 
+    food.*, 
+    bookings.swap, 
+    images.url
+    FROM food 
       LEFT JOIN bookings ON bookings.food_id = food.food_id 
       LEFT JOIN (
           SELECT DISTINCT ON (food_id) food_id, url
@@ -123,15 +128,20 @@ router.get('/request', async (req, res) => {
       console.log('query', query)
       const getFoodOptions = await db.query(query)
       console.log('getFoodOptions', getFoodOptions.rows)
-      res.send(getFoodOptions.rows)
+      res.json(getFoodOptions.rows)
     } else {
       const getFoodOptions = await db.query(
-        `SELECT * FROM food LEFT JOIN bookings ON bookings.food_id = food.food_id 
+        `SELECT DISTINCT ON (food.food_id) 
+    food.*, 
+    bookings.swap, 
+    images.url  FROM food LEFT JOIN bookings ON bookings.food_id = food.food_id 
         LEFT JOIN (SELECT DISTINCT ON (food_id) food_id, url FROM images
-      ) AS images ON images.food_id = food.food_id WHERE chef_id = ${requestUser}`
+      ) AS images ON images.food_id = food.food_id WHERE chef_id = ${requestUser}
+      GROUP BY 
+    food.food_id`
       )
       console.log('getFoodOptions', getFoodOptions.rows[0])
-      res.send(getFoodOptions.rows[0])
+      res.json(getFoodOptions.rows[0])
     }
   } catch (err) {
     console.error(err.message)
