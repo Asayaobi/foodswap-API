@@ -15,27 +15,13 @@ router.post('/food', async (req, res) => {
       throw new Error('Invalid authentication token')
     }
     // Validate fields
-    const {
-      food_title,
-      country,
-      category,
-      ingredients,
-      description,
-      available,
-      images
-    } = req.body
+    const { food_title, country, category, ingredients, description, images } =
+      req.body
     console.log('reqbody', req.body)
-    if (
-      !food_title ||
-      !country ||
-      !category ||
-      !ingredients ||
-      !available ||
-      !description
-    ) {
+    if (!food_title || !country || !category || !ingredients || !description) {
       return res.json({
         error:
-          'Either food title, country, category, ingredients, description, availability, or images is missing.'
+          'Either food title, country, category, ingredients, description, or images is missing.'
       })
     }
     // Validate images
@@ -55,6 +41,17 @@ router.post('/food', async (req, res) => {
       })
     }
 
+    //check if there's any available food in the list
+    const checkQuery = `SELECT * FROM food WHERE chef_id = ${decoded.user_id} AND available = TRUE`
+    console.log('checkQuery', checkQuery)
+    let result = await db.query(checkQuery)
+    console.log('check data', result)
+    if (result.rowCount) {
+      return res.json({
+        error:
+          'You can only swap 1 dish at a time, please update the availability of your other dish.'
+      })
+    }
     //create food
     let query = `INSERT INTO food (
           food_title,
@@ -77,7 +74,7 @@ router.post('/food', async (req, res) => {
     const foodCreated = await db.query(query)
     let food = foodCreated.rows[0]
 
-    // Create photos
+    // // Create photos
     let photosQuery = 'INSERT INTO images (food_id, url) VALUES '
     images.forEach((p, i) => {
       if (i === images.length - 1) {
