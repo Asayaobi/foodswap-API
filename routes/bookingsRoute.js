@@ -13,14 +13,17 @@ router.post('/bookings', async (req, res) => {
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
-    const { food_id, message, booking_date } = req.body
+    const food_id = req.body.food_id
     //Validate Field
     if (!food_id) {
       throw new Error(' food_id is missing')
     }
+    // Get current date in 'YYYY-MM-DD' format
+    const currentDate = new Date().toISOString().split('T')[0]
+
     const { rows } = await db.query(
-      `INSERT INTO bookings(food_id,user_id,message,booking_date)
-      VALUES(${food_id}, ${decodedToken.user_id}, '${message}','${booking_date}') RETURNING *`
+      `INSERT INTO bookings(food_id,user_id,booking_date)
+      VALUES(${food_id}, ${decodedToken.user_id}, '${currentDate}') RETURNING *`
     )
     console.log('post booking response', rows[0])
     res.json(rows[0])
