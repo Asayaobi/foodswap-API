@@ -33,6 +33,34 @@ router.post('/bookings', async (req, res) => {
   }
 })
 
+//Update a swap status
+router.patch('/swap', async (req, res) => {
+  try {
+    //Validate Token
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decodedToken', decodedToken)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      throw new Error('Invalid authentication token')
+    }
+    const { booking_id, swap } = req.body
+    //Validate Field
+    if (!booking_id || !swap) {
+      return res.json({
+        error: 'Either booking_id or swap status is missing'
+      })
+    }
+    const query = `UPDATE bookings
+      SET swap = '${swap}' WHERE booking_id = ${booking_id}`
+    console.log('query to patch swap', query)
+    const { rows } = await db.query(query)
+    console.log('swap status response', rows[0])
+    res.json(rows[0])
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Define a GET route for fetching the list of booking from each user
 router.get('/bookings', async (req, res) => {
   try {
@@ -47,7 +75,6 @@ router.get('/bookings', async (req, res) => {
       bookings.booking_id,
       bookings.food_id,
       bookings.user_id,
-      bookings.message,
       bookings.booking_date,
       bookings.swap,
         food.food_id,
@@ -93,56 +120,38 @@ router.get('/request', async (req, res) => {
     )
     console.log('getFoodId', getFoodId.rows)
     //2 get user who request the food
-    const requestUser = 0
     const requestUsers = []
-    if (getFoodId.rows.length === 1) {
-      const getRequestUserId = await db.query(
-        `SELECT user_id from bookings WHERE food_id = ${getFoodId.rows[0].food_id}`
-      )
-      requestUser += getRequestUserId.rows[0].user_id
-      console.log(getRequestUserId, getRequestUserId.rows[0].user_id)
-    } else {
-      const foodids = getFoodId.rows
-      let query = `SELECT user_id from bookings WHERE ${foodids.map((e) => `food_id = ${e.food_id}`).join(' OR ')}`
-      console.log('query', query)
-      const getRequestUserId = await db.query(query)
-      console.log('getRequestUserId', getRequestUserId.rows)
-      requestUsers.push(getRequestUserId.rows)
-    }
+    const foodids = getFoodId.rows
+    let query = `SELECT user_id from bookings WHERE ${foodids.map((e) => `food_id = ${e.food_id}`).join(' OR ')}`
+    console.log('query to get user_id', query)
+    const getRequestUserId = await db.query(query)
+    console.log('response from getRequestUserId', getRequestUserId.rows)
+    requestUsers.push(getRequestUserId.rows)
     //3 show dishes from those users
-    console.log('requestUsers', requestUsers)
-    if (!requestUser) {
-      let query = `
-      SELECT DISTINCT ON (food.food_id) 
-    food.*, 
-    bookings.swap, 
-    images.url
-    FROM food 
-      LEFT JOIN bookings ON bookings.food_id = food.food_id 
+
+    let querySwap = `
+      SELECT 
+      bookings.booking_id,
+      bookings.swap,
+      food.food_id,
+      food.food_title,
+      food.country,
+      food.chef_id,
+      food.rating,
+      food.available,
+      images.url
+    FROM bookings 
+      LEFT JOIN food ON food.chef_id = bookings.user_id 
       LEFT JOIN (
           SELECT DISTINCT ON (food_id) food_id, url
           FROM images
       ) AS images ON images.food_id = food.food_id  
-      WHERE ${requestUsers[0].map((e) => `chef_id = ${e.user_id}`).join(' OR ')}`
+      WHERE ${requestUsers[0].map((e) => `user_id = ${e.user_id}`).join(' OR ')}`
 
-      console.log('query', query)
-      const getFoodOptions = await db.query(query)
-      console.log('getFoodOptions', getFoodOptions.rows)
-      res.json(getFoodOptions.rows)
-    } else {
-      const getFoodOptions = await db.query(
-        `SELECT DISTINCT ON (food.food_id) 
-    food.*, 
-    bookings.swap, 
-    images.url  FROM food LEFT JOIN bookings ON bookings.food_id = food.food_id 
-        LEFT JOIN (SELECT DISTINCT ON (food_id) food_id, url FROM images
-      ) AS images ON images.food_id = food.food_id WHERE chef_id = ${requestUser}
-      GROUP BY 
-    food.food_id`
-      )
-      console.log('getFoodOptions', getFoodOptions.rows[0])
-      res.json(getFoodOptions.rows[0])
-    }
+    console.log('request query', query)
+    const getFoodOptions = await db.query(querySwap)
+    console.log('getFoodOptions', getFoodOptions.rows)
+    res.json(getFoodOptions.rows)
   } catch (err) {
     console.error(err.message)
     res.json(err)
