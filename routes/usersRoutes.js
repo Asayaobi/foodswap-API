@@ -58,6 +58,40 @@ router.get('/profile', async (req, res) => {
   }
 })
 
+//Patch user for /profile page
+router.patch('/profile', async (req, res) => {
+  try {
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      res.json({ error: 'please log in to update your profile' })
+    } else {
+      const { firstname, lastname, profile_image, city } = req.body
+      let query = `UPDATE users SET `
+      let setArray = []
+      if (firstname) {
+        setArray.push(`firstname = '${firstname}'`)
+      }
+      if (lastname) {
+        setArray.push(`lastname = '${lastname}'`)
+      }
+      if (profile_image) {
+        setArray.push(`profile_image = '${profile_image}'`)
+      }
+      if (city) {
+        setArray.push(`city = '${city}'`)
+      }
+      query += setArray.join(', ')
+      query += ` WHERE user_id = ${decodedToken.user_id} RETURNING *`
+      console.log('query for patch /profile', query)
+      const updateUser = await db.query(query)
+      res.json(updateUser.rows[0])
+      console.log('update user profile', updateUser.rows[0])
+    }
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
 // Update user info with PATCH
 router.patch('/users/:userId', async (req, res) => {
   try {
