@@ -40,6 +40,25 @@ router.get('/users/:userId', async (req, res) => {
   }
 })
 
+//Get user for /profile page
+router.get('/profile', async (req, res) => {
+  try {
+    const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
+    if (!decodedToken.user_id || !decodedToken.email) {
+      res.json({ error: 'please log in to view your profile' })
+    } else {
+      const { rows } = await db.query(
+        `SELECT * FROM users WHERE user_id = ${decodedToken.user_id}`
+      )
+      console.log('response from users for /profile', rows[0])
+      res.json(rows[0])
+    }
+  } catch (err) {
+    console.error(err.message)
+    res.json(err)
+  }
+})
+
 // Update user info with PATCH
 router.patch('/users/:userId', async (req, res) => {
   try {
