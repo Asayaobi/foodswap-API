@@ -50,7 +50,6 @@ router.get('/profile', async (req, res) => {
       const { rows } = await db.query(
         `SELECT * FROM users WHERE user_id = ${decodedToken.user_id}`
       )
-      console.log('response from users for /profile', rows[0])
       res.json(rows[0])
     }
   } catch (err) {
