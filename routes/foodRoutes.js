@@ -48,8 +48,7 @@ router.post('/food', async (req, res) => {
     console.log('check data', result)
     if (result.rowCount) {
       return res.json({
-        error:
-          'You can only swap 1 dish at a time, please update the availability of your other dish.'
+        error: `You can only list one available dish at a time, please update the availability of your other dish to 'not today'.`
       })
     }
     //create food
