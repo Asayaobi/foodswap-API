@@ -1,17 +1,27 @@
 import { Router } from 'express'
 import db from '../db.js'
+import jwt from 'jsonwebtoken'
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
 //Post a review for a dish
 router.post('/reviews', async (req, res) => {
   try {
-    const { reviewer_id, food_id, review_text, rating, review_date } = req.body
-    if (!reviewer_id || !food_id || !rating) {
-      throw new Error('Either user_id, food_id, rating is missing.')
+    //Validate Token
+    const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
+    console.log('decoded token', decoded)
+    if (!decoded.user_id || !decoded.email) {
+      throw new Error('Invalid authentication token')
+    }
+    //Validate field
+    const { review_text, rating, food_id } = req.body
+    const review_date = new Date().toISOString()
+    if (!review_text || !rating) {
+      throw new Error('Either comment or rating is missing.')
     } else {
       const review = await db.query(
         `INSERT INTO reviews(reviewer_id, food_id, review_text, rating, review_date)
-      VALUES(${reviewer_id},${food_id},'${review_text}', ${rating},'${review_date}')
+      VALUES(${decoded.user_id},${food_id},'${review_text}', ${rating},'${review_date}')
       RETURNING *`
       )
       console.log('review response', review.rows[0])
