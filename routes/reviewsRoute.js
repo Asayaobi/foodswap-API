@@ -9,12 +9,12 @@ router.post('/reviews', async (req, res) => {
   try {
     //Validate Token
     const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decoded token', decoded)
     if (!decoded.user_id || !decoded.email) {
       throw new Error('Invalid authentication token')
     }
     //Validate field
     const { review_text, rating, food_id } = req.body
+    //Add review_date
     const review_date = new Date().toISOString()
     if (!review_text || !rating) {
       throw new Error('Either comment or rating is missing.')
@@ -24,7 +24,6 @@ router.post('/reviews', async (req, res) => {
       VALUES(${decoded.user_id},${food_id},'${review_text}', ${rating},'${review_date}')
       RETURNING *`
       )
-      console.log('review response', review.rows[0])
       res.json(review.rows[0])
     }
   } catch (err) {
@@ -87,5 +86,4 @@ router.delete('/reviews/:reviewId', async (req, res) => {
   }
 })
 
-// Export the router
 export default router
