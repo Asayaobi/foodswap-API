@@ -118,7 +118,7 @@ router.get('/request', async (req, res) => {
     const getFoodId = await db.query(
       `SELECT food_id from food WHERE chef_id = ${decodedToken.user_id}`
     )
-    console.log('getFoodId', getFoodId.rows)
+    console.log('food_id', getFoodId.rows)
     //2 get user who request the food
     const requestUsers = []
     const foodids = getFoodId.rows
@@ -146,9 +146,9 @@ router.get('/request', async (req, res) => {
           SELECT DISTINCT ON (food_id) food_id, url
           FROM images
       ) AS images ON images.food_id = food.food_id  
-      WHERE ${requestUsers[0].map((e) => `user_id = ${e.user_id}`).join(' OR ')} AND food.available = true`
+      WHERE ${requestUsers[0].map((e) => `bookings.user_id = ${e.user_id}`).join(' OR ')} AND ${foodids.map((e) => `bookings.food_id = ${e.food_id}`).join(' OR ')} AND food.available = true`
 
-    console.log('request query', query)
+    console.log('request query', querySwap)
     const getFoodOptions = await db.query(querySwap)
     console.log('getFoodOptions', getFoodOptions.rows)
     res.json(getFoodOptions.rows)
