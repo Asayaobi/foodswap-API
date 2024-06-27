@@ -9,24 +9,35 @@ router.post('/bookings', async (req, res) => {
   try {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
+    console.log('decodedToken POST SWAP', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
-    const food_id = req.body.food_id
-    //Validate Field
-    if (!food_id) {
-      throw new Error(' food_id is missing')
-    }
-    // Get current date in 'YYYY-MM-DD' format
-    const currentDate = new Date().toISOString().split('T')[0]
+    //Check if this user has listed any food to swap
+    const checkQuery = `SELECT * FROM food where chef_id = ${decodedToken.user_id} AND available = TRUE`
+    let result = await db.query(checkQuery)
+    console.log('result POST SWAP- check query', result)
+    if (result.rowCount === 0) {
+      return res.json({
+        error: `You have to list one dish in order to swap with others.`
+      })
+    } else {
+      //post the swap request
+      const food_id = req.body.food_id
+      //Validate Field
+      if (!food_id) {
+        throw new Error('food_id is missing')
+      }
+      // Get current date in 'YYYY-MM-DD' format
+      const currentDate = new Date().toISOString().split('T')[0]
 
-    const { rows } = await db.query(
-      `INSERT INTO bookings(food_id,user_id,booking_date,swap)
+      const { rows } = await db.query(
+        `INSERT INTO bookings(food_id,user_id,booking_date,swap)
       VALUES(${food_id}, ${decodedToken.user_id}, '${currentDate}', 'pending') RETURNING *`
-    )
-    console.log('post booking response', rows[0])
-    res.json(rows[0])
+      )
+      console.log('post booking response', rows[0])
+      res.json(rows[0])
+    }
   } catch (err) {
     console.error(err.message)
     res.json(err)
