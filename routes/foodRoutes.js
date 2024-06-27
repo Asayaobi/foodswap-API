@@ -95,7 +95,7 @@ router.post('/food', async (req, res) => {
     console.log('from post food', food)
   } catch (err) {
     console.error(err.message)
-    res.json({ error: 'Internal server error' })
+    res.json({ error: err.message })
   }
 })
 // Define a GET route for fetching the list of food from the same user id
