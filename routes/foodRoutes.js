@@ -15,13 +15,20 @@ router.post('/food', async (req, res) => {
       throw new Error('Invalid authentication token')
     }
     // Validate fields
-    const { food_title, country, category, ingredients, description, images } =
-      req.body
+    const {
+      food_title,
+      country,
+      category,
+      ingredients,
+      description,
+      images,
+      available
+    } = req.body
     console.log('reqbody', req.body)
     if (!food_title || !country || !category || !ingredients || !description) {
       return res.json({
         error:
-          'Either food title, country, category, ingredients, description, or images is missing.'
+          'Either food title, country, category, ingredients, description, availability or images is missing.'
       })
     }
     // Validate images
@@ -69,7 +76,7 @@ router.post('/food', async (req, res) => {
           ${decoded.user_id},
           ${available}
         )RETURNING *`
-    console.log('query for food info', query)
+    console.log('query for CREATE FOOD', query)
     const foodCreated = await db.query(query)
     let food = foodCreated.rows[0]
 
@@ -83,7 +90,7 @@ router.post('/food', async (req, res) => {
       }
     })
     photosQuery += 'RETURNING *'
-    console.log('photoquery', photosQuery)
+    console.log('query FOR CREATE IMAGES', photosQuery)
     let photosCreated = await db.query(photosQuery)
     // Compose response
     let photosArray = photosCreated.rows
@@ -91,7 +98,7 @@ router.post('/food', async (req, res) => {
     food.images = photosArray.map((row) => row.url)
     food.rating = 0
     // Respond
-    res.json({ message: 'new food is posted' })
+    res.json(food)
     console.log('from post food', food)
   } catch (err) {
     console.error(err.message)
