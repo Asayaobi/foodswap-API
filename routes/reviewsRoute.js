@@ -7,6 +7,12 @@ const router = Router()
 //Post a review for a dish
 router.post('/reviews', async (req, res) => {
   try {
+    //check if the user is logged in
+    if (!req.cookies.jwt) {
+      return res.json({
+        error: 'Please log in before posting a review.'
+      })
+    }
     //Validate Token
     const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
     if (!decoded.user_id || !decoded.email) {
