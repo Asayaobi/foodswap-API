@@ -199,7 +199,9 @@ FROM (
       res.json(rows)
       console.log(rows[0])
     } else {
-      throw new Error('Food item not found')
+      return res.json({
+        error: 'food item not found'
+      })
     }
   } catch (err) {
     console.error(err.message)
