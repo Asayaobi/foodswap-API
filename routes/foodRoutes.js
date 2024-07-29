@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import db from '../db.js'
 import jwt from 'jsonwebtoken'
+import { clearConfigCache } from 'prettier'
 
 const jwtSecret = process.env.JWT_SECRET
 const router = Router()
@@ -304,7 +305,13 @@ router.patch('/food/:foodId', async (req, res) => {
 
     // Insert images into images table
     let images = req.body.images
-    if (images && Array.isArray(images)) {
+    console.log('images from patch', images)
+    if (
+      images &&
+      Array.isArray(images) &&
+      images.length > 0 &&
+      images.every((img) => img.trim() !== '')
+    ) {
       const getOldimages = await db.query(
         `SELECT * FROM images WHERE food_id = ${req.params.foodId}`
       )
