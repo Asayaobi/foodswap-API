@@ -371,7 +371,9 @@ router.delete('/food/:foodId', async (req, res) => {
     DELETE FROM food WHERE food_id = ${req.params.foodId} AND chef_id = ${decodedToken.user_id} RETURNING *
   `)
     if (!rows.length) {
-      throw new Error(`You are not authorized to delete this item`)
+      return res.json({
+        error: 'You are not authorized to delete this item'
+      })
     }
     res.json(rows[0])
   } catch (err) {
