@@ -17,6 +17,21 @@ app.options('*', cors())
 app.use(express.json())
 app.use(cookieParser())
 
+app.get('/set-cookie', (req, res) => {
+  res.cookie('sessionId', '123456', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Lax', // or 'Strict'
+    maxAge: 3600000 // 1 hour
+  })
+  res.send('First-party cookie set')
+})
+
+app.get('/get-cookie', (req, res) => {
+  const sessionId = req.cookies.sessionId
+  res.send(`Session ID: ${sessionId}`)
+})
+
 // Import the users router module
 import usersRouter from './routes/usersRoutes.js'
 import foodRouter from './routes/foodRoutes.js'
