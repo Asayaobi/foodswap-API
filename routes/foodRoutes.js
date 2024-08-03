@@ -310,7 +310,7 @@ router.patch('/food/:foodId', async (req, res) => {
       images &&
       Array.isArray(images) &&
       images.length > 0 &&
-      images.every((img) => img.trim() !== '')
+      images.some((img) => img.trim() !== '')
     ) {
       const getOldimages = await db.query(
         `SELECT * FROM images WHERE food_id = ${req.params.foodId}`
@@ -318,6 +318,10 @@ router.patch('/food/:foodId', async (req, res) => {
       const oldImages = getOldimages.rows
       console.log('oldImages', oldImages)
       console.log('images', images)
+
+      //if new images is empty, remove it from an array
+      images = images.filter((image) => image !== '')
+      console.log('filter blank images', images)
       if (oldImages.length === 0) {
         //if there's no existed image
         const imageInserts = (images) => {
