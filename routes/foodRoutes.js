@@ -1,8 +1,6 @@
 import { Router } from 'express'
 import db from '../db.js'
 import jwt from 'jsonwebtoken'
-import { clearConfigCache } from 'prettier'
-
 const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
@@ -108,6 +106,8 @@ router.post('/food', async (req, res) => {
 })
 // Define a GET route for fetching the list of food from the same user id
 router.get('/listings', async (req, res) => {
+  //check if cookie is passed
+  console.log('Cookies: ', req.cookies)
   try {
     // Validate Token
     const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
