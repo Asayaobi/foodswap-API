@@ -1,10 +1,12 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import 'dotenv/config'
 
 // run the express function
 const app = express()
-// Middleware
+
+// CORS setting
 app.use(
   cors({
     origin: true,
@@ -33,7 +35,7 @@ app.use(reviewsRouter)
 app.use(imagesRouter)
 app.use(authRouter)
 
-// create routes
+// welcome routes
 app.get('/', (req, res) => {
   res.send('Hello from foodswap!')
 })
