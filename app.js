@@ -12,8 +12,10 @@ app.use(
   })
 )
 app.options('*', cors())
-app.use(cookieParser())
+
+// Middleware to parse JSON bodies
 app.use(express.json())
+app.use(cookieParser())
 
 // Import the users router module
 import usersRouter from './routes/usersRoutes.js'
@@ -37,6 +39,8 @@ app.get('/', (req, res) => {
 })
 
 // keep the server open
-app.listen(4000, () => {
-  console.log(`Server is ready to accept requests on PORT 4000`)
+app.listen(process.env.PORT || 4000, () => {
+  console.log(
+    `Server is ready to accept requests on PORT ${process.env.PORT || 4000}`
+  )
 })
