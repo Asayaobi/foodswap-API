@@ -104,8 +104,16 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/logout', (req, res) => {
-  res.clearCookie('jwt')
-  res.send('You are logged out')
+  try {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true in production
+      sameSite: 'None' // Ensure it matches the cookie settings
+    })
+    res.json({ message: 'You are logged out' })
+  } catch (err) {
+    res.json({ error: err.message })
+  }
 })
 
 // Export the router
