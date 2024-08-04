@@ -7,6 +7,18 @@ const router = Router()
 //Post a reservation for the dish
 router.post('/bookings', async (req, res) => {
   try {
+    // Check if user isn't logged in = req.cookies is an empty object
+    const isEmptyObject =
+      req.cookies &&
+      Object.keys(req.cookies).length === 0 &&
+      (Object.getPrototypeOf(req.cookies) === null ||
+        Object.getPrototypeOf(req.cookies) === Object.prototype)
+    if (isEmptyObject) {
+      return res.json({
+        error: 'Please register in order to swap with others.'
+      })
+    }
+
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
     console.log('decodedToken POST SWAP', decodedToken)
