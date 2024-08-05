@@ -4,11 +4,10 @@ import jwt from 'jsonwebtoken'
 const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
-// Define a GET route for fetching the list of users
+// Define a GET route for fetching the list of users *for API testing only*
 router.get('/users', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM users')
-    console.log('rows users', rows)
     res.json(rows)
   } catch (err) {
     console.error(err.message)
@@ -16,12 +15,11 @@ router.get('/users', async (req, res) => {
   }
 })
 
-// Define a GET route for fetching a single user
+// Define a GET route for fetching a single user *for API testing only*
 router.get('/users/:userId', async (req, res) => {
   try {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -82,10 +80,8 @@ router.patch('/profile', async (req, res) => {
       }
       query += setArray.join(', ')
       query += ` WHERE user_id = ${decodedToken.user_id} RETURNING *`
-      console.log('query for patch /profile', query)
       const updateUser = await db.query(query)
       res.json(updateUser.rows[0])
-      console.log('update user profile', updateUser.rows[0])
     }
   } catch (err) {
     console.error(err.message)
@@ -97,7 +93,6 @@ router.patch('/users/:userId', async (req, res) => {
   try {
     //validate token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -129,10 +124,8 @@ router.patch('/users/:userId', async (req, res) => {
       }
       query += setArray.join(', ')
       query += ` WHERE user_id = ${decodedToken.user_id} RETURNING *`
-      console.log('query', query)
       const updateUser = await db.query(query)
       res.json(updateUser.rows[0])
-      console.log('updateUser', updateUser.rows[0])
     }
   } catch (err) {
     console.error(err.message)
@@ -140,5 +133,4 @@ router.patch('/users/:userId', async (req, res) => {
   }
 })
 
-// Export the router
 export default router
