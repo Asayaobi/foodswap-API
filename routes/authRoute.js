@@ -26,7 +26,6 @@ router.post('/signup', async (req, res) => {
     const checkEmail = await db.query(
       `SELECT * FROM users WHERE email = '${email}'`
     )
-    console.log('checkEmail', checkEmail.rowCount)
     if (checkEmail.rowCount) {
       return res.json({ error: 'This email is already existed' })
     } else {
@@ -42,7 +41,6 @@ router.post('/signup', async (req, res) => {
         email: rows[0].email,
         user_id: rows[0].user_id
       }
-      console.log('payload', payload)
       // Generate a token
       const token = jwt.sign(payload, jwtSecret)
       //Put the jwt in the cookie
@@ -69,16 +67,12 @@ router.post('/login', async (req, res) => {
       //recieve data from query
       const query = `SELECT * FROM users 
         WHERE email = '${email}'`
-      console.log(query)
       const result = await db.query(query)
-      console.log('log in data', result.rows)
       if (!result.rowCount) {
         throw new Error(`your email does not exist`)
       }
       //verify password
       const hashedPassword = result.rows[0].password
-      console.log('hashedPassword', hashedPassword)
-      console.log('password', password)
       const isPasswordValid = await bcrypt.compare(password, hashedPassword)
       if (isPasswordValid) {
         //create payload - jwt token
@@ -86,7 +80,6 @@ router.post('/login', async (req, res) => {
           email: result.rows[0].email,
           user_id: result.rows[0].user_id
         }
-        console.log('payload login', payload)
         // Generate a token
         const token = jwt.sign(payload, jwtSecret)
         //Put the jwt in the cookie
