@@ -9,7 +9,6 @@ router.post('/food', async (req, res) => {
   try {
     // Validate Token
     const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decoded token', decoded)
     if (!decoded.user_id || !decoded.email) {
       throw new Error('Invalid authentication token')
     }
@@ -23,7 +22,6 @@ router.post('/food', async (req, res) => {
       images,
       available
     } = req.body
-    console.log('reqbody', req.body)
     if (!food_title || !country || !category || !ingredients || !description) {
       return res.json({
         error:
@@ -49,14 +47,13 @@ router.post('/food', async (req, res) => {
 
     //check if there's any available food in the list
     const checkQuery = `SELECT * FROM food WHERE chef_id = ${decoded.user_id} AND available = TRUE`
-    console.log('checkQuery', checkQuery)
     let result = await db.query(checkQuery)
-    console.log('check data', result)
     if (result.rowCount) {
       return res.json({
         error: `You can only list one available dish at a time, please update the availability of your other dish to 'not today'.`
       })
     }
+
     //create food
     let query = `INSERT INTO food (
           food_title,
@@ -75,7 +72,6 @@ router.post('/food', async (req, res) => {
           ${decoded.user_id},
           ${available}
         )RETURNING *`
-    console.log('query for CREATE FOOD', query)
     const foodCreated = await db.query(query)
     let food = foodCreated.rows[0]
 
@@ -89,29 +85,24 @@ router.post('/food', async (req, res) => {
       }
     })
     photosQuery += 'RETURNING *'
-    console.log('query FOR CREATE IMAGES', photosQuery)
     let photosCreated = await db.query(photosQuery)
     // Compose response
     let photosArray = photosCreated.rows
-    console.log('photosArrayd', photosArray)
     food.images = photosArray.map((row) => row.url)
     food.rating = 0
     // Respond
     res.json(food)
-    console.log('from post food', food)
   } catch (err) {
     console.error(err.message)
     res.json({ error: err.message })
   }
 })
+
 // Define a GET route for fetching the list of food from the same user id
 router.get('/listings', async (req, res) => {
-  //check if cookie is passed
-  console.log('Cookies: ', req.cookies)
   try {
     // Validate Token
     const decoded = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decoded token', decoded)
     if (!decoded.user_id || !decoded.email) {
       throw new Error('Invalid authentication token')
     }
@@ -126,7 +117,6 @@ FROM (
     LEFT JOIN images ON food.food_id = images.food_id 
     WHERE chef_id = ${decoded.user_id})`
     )
-    console.log('rows food', rows)
     res.json(rows)
   } catch (err) {
     console.error(err.message)
@@ -194,11 +184,9 @@ FROM (
       query += ` AND category = '${req.query.category}'`
     }
     query += ') AS distinct_food'
-    console.log('query', query)
     const { rows } = await db.query(query)
     if (rows.length > 0) {
       res.json(rows)
-      console.log(rows[0])
     } else {
       return res.json({
         error: 'food item not found'
@@ -209,7 +197,7 @@ FROM (
   }
 })
 
-//add get request for filter results -- countries
+//add get request for filter results -- cuilinary style
 router.get('/country', async (req, res) => {
   try {
     let query = `SELECT DISTINCT(country) FROM food`
@@ -221,7 +209,7 @@ router.get('/country', async (req, res) => {
   }
 })
 
-//add get request for filter results -- category
+//add get request for filter results -- meal course
 router.get('/category', async (req, res) => {
   try {
     let query = `SELECT DISTINCT(category) FROM food`
@@ -250,7 +238,6 @@ router.patch('/food/:foodId', async (req, res) => {
   try {
     // Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decoded token', decodedToken)
     if (!decodedToken || !decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -263,7 +250,6 @@ router.patch('/food/:foodId', async (req, res) => {
       description,
       available
     } = req.body
-    console.log('body', req.body)
 
     //Update food table
     let food
@@ -297,15 +283,12 @@ router.patch('/food/:foodId', async (req, res) => {
       }
       query += setArray.join(', ')
       query += ` WHERE food_id = ${req.params.foodId} AND chef_id = ${decodedToken.user_id} RETURNING *`
-      console.log('query for update food', query)
       const updateFood = await db.query(query)
       food = updateFood.rows[0]
-      console.log('updatefood', food)
     }
 
     // Insert images into images table
     let images = req.body.images
-    console.log('images from patch', images)
     if (
       images &&
       Array.isArray(images) &&
@@ -316,12 +299,9 @@ router.patch('/food/:foodId', async (req, res) => {
         `SELECT * FROM images WHERE food_id = ${req.params.foodId}`
       )
       const oldImages = getOldimages.rows
-      console.log('oldImages', oldImages)
-      console.log('images', images)
 
       //if new images is empty, remove it from an array
       images = images.filter((image) => image !== '')
-      console.log('filter blank images', images)
       if (oldImages.length === 0) {
         //if there's no existed image
         const imageInserts = (images) => {
@@ -332,10 +312,8 @@ router.patch('/food/:foodId', async (req, res) => {
           return imagesStrings
         }
         const updateImage = imageInserts(images)
-        console.log('update string', updateImage)
         const insertImagesQuery = `INSERT INTO images (food_id, url) VALUES ${updateImage}`
         const updateFood = await db.query(insertImagesQuery)
-        console.log(`${updateFood.rowCount} images inserted successfully`)
       } else {
         //if there're existed images
         function replaceUrls(oldImages, newUrls) {
@@ -352,7 +330,6 @@ router.patch('/food/:foodId', async (req, res) => {
             img.image_id
           ])
         }
-        console.log('Updated images', newImages)
       }
     }
     res.json(food)
@@ -367,7 +344,6 @@ router.delete('/food/:foodId', async (req, res) => {
   try {
     //Validate Token
     let decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('You are not authorized')
     }
