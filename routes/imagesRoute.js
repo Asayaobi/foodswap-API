@@ -3,12 +3,12 @@ import db from '../db.js'
 import jwt from 'jsonwebtoken'
 const jwtSecret = process.env.JWT_SECRET
 const router = Router()
+
 //Post images for food
 router.post('/images', async (req, res) => {
   try {
     //Validate field
     let decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -18,7 +18,6 @@ router.post('/images', async (req, res) => {
       `SELECT * FROM food WHERE chef_id = ${decodedToken.user_id} AND food_id = ${food_id}`
     )
     let foodFromUser = userCheck.rows
-    console.log('foodFromUser-userCheck rows', foodFromUser)
     if (foodFromUser.rowCount === 0) {
       throw new Error('You are not authorized')
     } else {
@@ -34,10 +33,8 @@ router.post('/images', async (req, res) => {
       }
       query += setUrl(imagesArray, food_id)
       query += ' RETURNING *'
-      console.log('query', query)
       //send query
       const images = await db.query(query)
-      console.log('images response', images.rows)
       res.json(images.rows)
     }
   } catch (err) {
@@ -45,6 +42,7 @@ router.post('/images', async (req, res) => {
     res.json(err)
   }
 })
+
 // Define a GET route for fetching the list of images
 router.get('/images', async (req, res) => {
   try {
@@ -55,7 +53,6 @@ router.get('/images', async (req, res) => {
     if (!rows.length) {
       throw new Error('image is not found')
     } else {
-      console.log(`rows images of food id ${food_id}`, rows)
       res.json(rows)
     }
   } catch (err) {
@@ -69,7 +66,6 @@ router.patch('/images/:imageId', async (req, res) => {
   try {
     //validate token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decoded token', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -84,9 +80,7 @@ router.patch('/images/:imageId', async (req, res) => {
       //updateImage
       const url = req.body.url
       const query = `UPDATE images SET url = '${url}' WHERE image_id = ${req.params.imageId} RETURNING *`
-      console.log('query', query)
       const updateImage = await db.query(query)
-      console.log('update Image', updateImage.rows)
       res.json(updateImage.rows)
     }
   } catch (err) {
@@ -95,7 +89,7 @@ router.patch('/images/:imageId', async (req, res) => {
   }
 })
 
-//Delete image
+//Delete image * for API testing only *
 router.delete('/images/:imageId', async (req, res) => {
   try {
     //Validate Token
@@ -107,12 +101,10 @@ router.delete('/images/:imageId', async (req, res) => {
     const getFoodId = await db.query(
       `SELECT food_id FROM images WHERE image_id = ${req.params.imageId}`
     )
-    console.log('getFoodId', getFoodId.rows[0])
     const food_id = getFoodId.rows[0].food_id
     const checkUser = await db.query(
       `SELECT * FROM food WHERE food_id = ${food_id} AND chef_id = ${decodedToken.user_id}`
     )
-    console.log('checkUser', checkUser.rows)
     if (checkUser.rowCount === 0) {
       throw new Error('You are not authorized.')
     } else {
@@ -130,5 +122,4 @@ router.delete('/images/:imageId', async (req, res) => {
   }
 })
 
-// Export the router
 export default router

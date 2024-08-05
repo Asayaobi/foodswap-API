@@ -362,5 +362,4 @@ router.delete('/food/:foodId', async (req, res) => {
   }
 })
 
-// Export the router
 export default router

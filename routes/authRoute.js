@@ -113,5 +113,4 @@ router.get('/logout', (req, res) => {
   }
 })
 
-// Export the router
 export default router
