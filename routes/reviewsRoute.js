@@ -75,7 +75,7 @@ router.get('/reviews', async (req, res) => {
   }
 })
 
-//Delete Reviews
+//Delete Reviews * for API testing only *
 router.delete('/reviews/:reviewId', async (req, res) => {
   try {
     const deleteReviews = await db.query(
