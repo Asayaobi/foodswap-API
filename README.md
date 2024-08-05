@@ -18,3 +18,10 @@ RESTful API: Implements standard HTTP methods for CRUD operations.
 3. Run the Project
    To run this project, execute the following command in the terminal:
    npm start
+
+## Demo Account
+
+You can use the following demo account to log in and explore the application:
+
+User: demo@1234567.com
+Password: 1234567
