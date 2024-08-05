@@ -21,14 +21,13 @@ router.post('/bookings', async (req, res) => {
 
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken POST SWAP', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
+
     //Check if this user has listed any food to swap
     const checkQuery = `SELECT * FROM food where chef_id = ${decodedToken.user_id} AND available = TRUE`
     let result = await db.query(checkQuery)
-    console.log('result POST SWAP- check query', result)
     if (result.rowCount === 0) {
       return res.json({
         error: `You have to list one dish in order to swap with others.`
@@ -40,14 +39,13 @@ router.post('/bookings', async (req, res) => {
       if (!food_id) {
         throw new Error('food_id is missing')
       }
+
       // Get current date in 'YYYY-MM-DD' format
       const currentDate = new Date().toISOString().split('T')[0]
-
       const { rows } = await db.query(
         `INSERT INTO bookings(food_id,user_id,booking_date,swap)
       VALUES(${food_id}, ${decodedToken.user_id}, '${currentDate}', 'pending') RETURNING *`
       )
-      console.log('post booking response', rows[0])
       res.json(rows[0])
     }
   } catch (err) {
@@ -61,7 +59,6 @@ router.patch('/swap', async (req, res) => {
   try {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -74,9 +71,7 @@ router.patch('/swap', async (req, res) => {
     }
     const query = `UPDATE bookings
       SET swap = '${swap}' WHERE booking_id = ${booking_id}`
-    console.log('query to patch swap', query)
     const { rows } = await db.query(query)
-    console.log('swap status response', rows[0])
     res.json(rows[0])
   } catch (err) {
     console.error(err.message)
@@ -89,7 +84,6 @@ router.get('/bookings', async (req, res) => {
   try {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
@@ -115,8 +109,6 @@ router.get('/bookings', async (req, res) => {
       ) AS images ON images.food_id = food.food_id
         WHERE user_id = ${user_id} AND food.available = true`
     const { rows } = await db.query(query)
-    console.log('query', query)
-    console.log(`bookings of user id ${user_id}`, rows)
     if (!rows.length) {
       throw new Error('booking is not found')
     } else {
@@ -133,25 +125,23 @@ router.get('/request', async (req, res) => {
   try {
     //Validate Token
     const decodedToken = jwt.verify(req.cookies.jwt, jwtSecret)
-    console.log('decodedToken', decodedToken)
     if (!decodedToken.user_id || !decodedToken.email) {
       throw new Error('Invalid authentication token')
     }
+
     // 1 get food id from this user
     const getFoodId = await db.query(
       `SELECT food_id from food WHERE chef_id = ${decodedToken.user_id}`
     )
-    console.log('food_id', getFoodId.rows)
+
     //2 get user who request the food
     const requestUsers = []
     const foodids = getFoodId.rows
     let query = `SELECT user_id from bookings WHERE ${foodids.map((e) => `food_id = ${e.food_id}`).join(' OR ')}`
-    console.log('query to get user_id', query)
     const getRequestUserId = await db.query(query)
-    console.log('response from getRequestUserId', getRequestUserId.rows)
     requestUsers.push(getRequestUserId.rows)
-    //3 show dishes from those users
 
+    //3 show dishes from those users
     let querySwap = `
       SELECT 
       bookings.booking_id,
@@ -171,9 +161,7 @@ router.get('/request', async (req, res) => {
       ) AS images ON images.food_id = food.food_id  
       WHERE (${requestUsers[0].map((e) => `bookings.user_id = ${e.user_id}`).join(' OR ')}) AND ${foodids.map((e) => `bookings.food_id = ${e.food_id}`).join(' OR ')} AND food.available = true`
 
-    console.log('request query', querySwap)
     const getFoodOptions = await db.query(querySwap)
-    console.log('getFoodOptions', getFoodOptions.rows)
     res.json(getFoodOptions.rows)
   } catch (err) {
     console.error(err.message)
@@ -181,7 +169,7 @@ router.get('/request', async (req, res) => {
   }
 })
 
-//Delete Booking
+//Delete Booking * for API testing only *
 router.delete('/bookings/:bookingId', async (req, res) => {
   try {
     const { rows } = await db.query(`
@@ -197,19 +185,4 @@ router.delete('/bookings/:bookingId', async (req, res) => {
   }
 })
 
-// Define a GET route for fetching a single booking
-// router.get('/bookings/1', async (req, res) => {
-//   try {
-//     const { rows } = await db.query(
-//       'SELECT * FROM bookings WHERE booking_id = 1'
-//     )
-//     console.log('rows bookingid1', rows)
-//     res.json(rows)
-//   } catch (err) {
-//     console.error(err.message)
-//     res.json(err)
-//   }
-// })
-
-// Export the router
 export default router
